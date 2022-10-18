@@ -20,7 +20,6 @@ function AppCore() {
 	const [customerEmail, setCustomerEmail] = useState();
 	const [customerPhone, setCustomerPhone] = useState();
 
-
     return (
     		<Router basename="/app">
 				<Routes>
@@ -38,6 +37,7 @@ function AppCore() {
 						/>} />
 					<Route exact path="/process" element={ 
 						<Process
+							selectedServiceId={selectedServiceId}
 							selectedServiceName={selectedServiceName}
 							selectedServicePrice={selectedServicePrice}
 							selectedDate={selectedDate}
@@ -49,6 +49,7 @@ function AppCore() {
 						/>} />
 					<Route exact path="/success" element={ 
 						<Success
+							selectedServiceId={selectedServiceId}
 							selectedServiceName={selectedServiceName}
 							selectedServicePrice={selectedServicePrice}
 							selectedDate={selectedDate}

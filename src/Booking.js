@@ -107,6 +107,10 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 
 	useEffect(() => {
 
+		if(!selectedServiceId) {
+			navigate('/')
+		}
+
 		getClosedBusinessDays()
 		.then(() => {
 			setLoading(false)
@@ -116,7 +120,7 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 
 	function handleAction(input) {
 		setCalendarValue(input)
-		setDisplayDate(dayjs(input).format('DD/MM/YYYY'))
+		setDisplayDate(dayjs(input).format('YYYY-MM-DD'))
 		buildTimeSlots(input)
 		.then((res) => {
 			setTimeslotData(res)
@@ -166,7 +170,7 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 			let diff = dayjs.duration(endTime.diff(startTime))
 
 			while(diff.asMinutes() > 0) {
-				timeslotArray.push(currentStep.format('HH:mm:ss'))
+				timeslotArray.push(currentStep.format('HH:mm'))
 				currentStep = currentStep.add(interval, 'minute')
 				diff = dayjs.duration(endTime.diff(currentStep))
 

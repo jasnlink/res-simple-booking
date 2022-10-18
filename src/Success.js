@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 
 import { 
 	Button,
@@ -18,9 +19,18 @@ import {
 
 import { IconCircleCheck } from '@tabler/icons';
 
-function Success({ selectedServiceName, selectedServicePrice, selectedDate, selectedTime,customerFirstName, customerLastName, customerEmail, customerPhone }) {
+function Success({ selectedServiceId, selectedServiceName, selectedServicePrice, selectedDate, selectedTime,customerFirstName, customerLastName, customerEmail, customerPhone }) {
 
+	let navigate = useNavigate();
 	const [loading, setLoading] = useState(false)
+
+	useEffect(() => {
+
+		if(!selectedServiceId) {
+			navigate('/')
+		}
+
+	}, [])
 
 	//formats price from cents to dollars
 	function formatPrice(price) {

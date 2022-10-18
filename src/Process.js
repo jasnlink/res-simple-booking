@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Axios from 'axios';
 import { Link, useNavigate } from "react-router-dom";
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration'
@@ -25,10 +26,20 @@ import { IconArrowNarrowLeft } from '@tabler/icons';
 
 
 
-function Process({ selectedServiceName, selectedServicePrice, selectedDate, selectedTime, setCustomerFirstName, setCustomerLastName, setCustomerEmail, setCustomerPhone }) {
+function Process({ selectedServiceId, selectedServiceName, selectedServicePrice, selectedDate, selectedTime, setCustomerFirstName, setCustomerLastName, setCustomerEmail, setCustomerPhone }) {
 
 	let navigate = useNavigate();
 	const [loading, setLoading] = useState(false)
+	const [submitLoading, setSubmitLoading] = useState(false)
+
+
+	useEffect(() => {
+
+		if(!selectedServiceId) {
+			navigate('/')
+		}
+
+	}, [])
 
 	//formats price from cents to dollars
 	function formatPrice(price) {
@@ -96,11 +107,29 @@ function Process({ selectedServiceName, selectedServicePrice, selectedDate, sele
 	}, [inputFirstName, inputLastName, inputEmail, inputPhone])
 
 	function handleSubmit() {
+
+		setSubmitLoading(true)
+
 		setCustomerFirstName(inputFirstName)
 		setCustomerLastName(inputLastName)
 		setCustomerEmail(inputEmail)
 		setCustomerPhone(inputPhone)
-		navigate('/success')
+
+		Axios.post(process.env.REACT_APP_BACKEND_ROUTE+"/api/create/booking", {
+			serviceId: selectedServiceId,
+			bookingDate: selectedDate,
+			bookingTime: selectedTime,
+			customerFirstName: inputFirstName,
+			customerLastName: inputLastName,
+			customerEmail: inputEmail,
+			customerPhone: inputPhone,
+		})
+		.then((response) => {
+			navigate('/success')
+		})
+		.catch((err) => {
+	       	console.log("error ", err)});
+
 	}
 
 	return (
@@ -159,7 +188,7 @@ function Process({ selectedServiceName, selectedServicePrice, selectedDate, sele
 					<Input.Wrapper mb="xl" label="Phone number" required>
 				      <Input placeholder="Your phone number" value={inputPhone} onChange={(event) => setInputPhone(event.currentTarget.value)} />
 				    </Input.Wrapper>
-				    <Button mt="xl" fullWidth size="md" disabled={!formValidated} onClick={handleSubmit}>
+				    <Button mt="xl" fullWidth size="md" disabled={!formValidated} onClick={handleSubmit} loading={submitLoading}>
 						Book appointment
 					</Button>
 				</Card>

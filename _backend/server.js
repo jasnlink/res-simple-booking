@@ -105,14 +105,79 @@ connectToDb( () => {
     console.log("Connected to database!");
 })
 
-app.get('/', (req, res) => {
 
-        console.log('...')
-        res.send('...');
+app.get('/api/list/categories', (req, res) => {
+
+	console.log('fetching all categories...')
+
+	// fetch categories
+	const fetchCategoryRequest = "SELECT * FROM res_categories WHERE deleted=0"
+	connection.query(fetchCategoryRequest, (err, result) => {
+		if(err) {
+			console.log('error...', err);
+			res.status(500).send(err);
+			return false;
+		}
+		res.send(result)
+	});
+
 });
 
-app.get('/api/default', (req, res) => {
+app.get('/api/list/services', (req, res) => {
 
-        console.log('Hello world...')
-        res.send('Hello World!');
+	console.log('fetching all services...')
+
+	// fetch categories
+	const fetchServiceRequest = "SELECT * FROM res_services WHERE deleted=0"
+	connection.query(fetchServiceRequest, (err, result) => {
+		if(err) {
+			console.log('error...', err);
+			res.status(500).send(err);
+			return false;
+		}
+		res.send(result)
+	});
+
+});
+
+app.post('/api/create/booking', (req, res) => {
+
+	const serviceId = req.body.serviceId;
+	const bookingDate = req.body.bookingDate;
+	const bookingTime = req.body.bookingTime;
+	const customerFirstName = req.body.customerFirstName;
+	const customerLastName = req.body.customerLastName;
+	const customerEmail = req.body.customerEmail;
+	const customerPhone = req.body.customerPhone;
+
+	console.log('new booking request...')
+
+
+	// insert customer info into database
+	const insertCustomerRequest = "INSERT INTO res_customers (first_name, last_name, phone, email) VALUES (?,?,?,?);"
+	connection.query(insertCustomerRequest, [customerFirstName, customerLastName, customerEmail, customerPhone], (err, result) => {
+		console.log('insert new customer...', customerEmail)
+		if(err) {
+			console.log('error...', err);
+			res.status(500).send(err);
+			return false;
+		}
+
+		// get the new customer id
+		let customerId = result.insertId;
+
+		// insert new booking
+		const insertBookingRequest = "INSERT INTO res_bookings (reserved_date, reserved_time, customer_id, service_id) VALUES (?,?,?,?);"
+		connection.query(insertBookingRequest, [bookingDate, bookingTime, customerId, serviceId], (err, result) => {
+			console.log('insert new booking...', bookingDate, bookingTime)
+			if(err) {
+				console.log('error...', err);
+				res.status(500).send(err);
+				return false;
+			}
+
+			res.send('ok');
+
+		});
+	});
 });
