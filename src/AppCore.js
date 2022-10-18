@@ -3,22 +3,60 @@ import { BrowserRouter as Router, Route, Routes, useParams } from "react-router-
 
 import Entry from './Entry'
 import Booking from './Booking'
+import Process from './Process'
+import Success from './Success'
 
 function AppCore() {
 
-	//Application step var
-	const [selectedService, setSelectedService] = useState();
+	//Application vars
+	const [selectedServiceId, setSelectedServiceId] = useState();
+	const [selectedServiceName, setSelectedServiceName] = useState();
+	const [selectedServicePrice, setSelectedServicePrice] = useState();
+	const [selectedDate, setSelectedDate] = useState();
+	const [selectedTime, setSelectedTime] = useState();
+
+	const [customerFirstName, setCustomerFirstName] = useState();
+	const [customerLastName, setCustomerLastName] = useState();
+	const [customerEmail, setCustomerEmail] = useState();
+	const [customerPhone, setCustomerPhone] = useState();
+
 
     return (
     		<Router basename="/app">
 				<Routes>
 					<Route exact path="/" element={ 
 						<Entry
-							setStep={selectedService => setSelectedService(selectedService)}
+							setSelectedServiceId={selectedServiceId => setSelectedServiceId(selectedServiceId)}
+							setSelectedServiceName={selectedServiceName => setSelectedServiceName(selectedServiceName)}
+							setSelectedServicePrice={selectedServicePrice => setSelectedServicePrice(selectedServicePrice)}
 						/>} />
 					<Route exact path="/booking" element={ 
 						<Booking
-							selectedService={selectedService}
+							selectedServiceId={selectedServiceId}
+							setSelectedDate={selectedDate => setSelectedDate(selectedDate)}
+							setSelectedTime={selectedTime => setSelectedTime(selectedTime)}
+						/>} />
+					<Route exact path="/process" element={ 
+						<Process
+							selectedServiceName={selectedServiceName}
+							selectedServicePrice={selectedServicePrice}
+							selectedDate={selectedDate}
+							selectedTime={selectedTime}
+							setCustomerFirstName={customerFirstName => setCustomerFirstName(customerFirstName)}
+							setCustomerLastName={customerLastName => setCustomerLastName(customerLastName)}
+							setCustomerEmail={customerEmail => setCustomerEmail(customerEmail)}
+							setCustomerPhone={customerPhone => setCustomerPhone(customerPhone)}
+						/>} />
+					<Route exact path="/success" element={ 
+						<Success
+							selectedServiceName={selectedServiceName}
+							selectedServicePrice={selectedServicePrice}
+							selectedDate={selectedDate}
+							selectedTime={selectedTime}
+							customerFirstName={customerFirstName}
+							customerLastName={customerLastName}
+							customerEmail={customerEmail}
+							customerPhone={customerPhone}
 						/>} />
 				</Routes>
 			</Router>

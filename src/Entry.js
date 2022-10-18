@@ -12,7 +12,7 @@ import {
 	Accordion,
  } from '@mantine/core';
 
-function Entry({ setSelectedService }) {
+function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServicePrice }) {
 
   const data = [
 	{
@@ -80,7 +80,10 @@ function Entry({ setSelectedService }) {
 
 	let navigate = useNavigate();
 
-	function handleSelect() {
+	function handleSelect(sId, sName, sPrice) {
+		setSelectedServiceId(sId)
+		setSelectedServiceName(sName)
+		setSelectedServicePrice(sPrice)
 		navigate('booking');
 	}
 
@@ -112,7 +115,7 @@ function Entry({ setSelectedService }) {
 										<Text mb="xl">
 											{item.desc}
 										</Text>
-										<Button fullWidth onClick={handleSelect}>
+										<Button fullWidth onClick={(id, name, price) => handleSelect(item.service_id, item.title, item.price)}>
 											Select
 										</Button>
 									</Card>
