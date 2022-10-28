@@ -140,6 +140,24 @@ app.get('/api/list/services', (req, res) => {
 
 });
 
+app.post('/api/list/limit/date/bookings', (req, res) => {
+
+	const limitDate = req.body.limitDate;
+
+	console.log('fetching all bookings by date...', limitDate)
+	// fetch categories
+	const fetchServiceRequest = "SELECT * FROM res_bookings WHERE deleted=0 AND reserved_date=?"
+	connection.query(fetchServiceRequest, [limitDate], (err, result) => {
+		if(err) {
+			console.log('error...', err);
+			res.status(500).send(err);
+			return false;
+		}
+		res.send(result)
+	});
+
+});
+
 app.post('/api/create/booking', (req, res) => {
 
 	const serviceId = req.body.serviceId;

@@ -21,7 +21,6 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 	const [services, setServices] = useState([])
 
 	useEffect(() => {
-		console.log(process.env.BACKEND_ROUTE)
 		//fetch categories and product option groups
 		const request1 = (process.env.REACT_APP_BACKEND_ROUTE+"/api/list/categories")
 		const request2 = (process.env.REACT_APP_BACKEND_ROUTE+"/api/list/services")

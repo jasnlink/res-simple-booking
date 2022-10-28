@@ -61,7 +61,7 @@ function AppCore() {
 						/>} />
 				</Routes>
 			</Router>
-      )
+		)
 
 }
 

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import Axios from 'axios';
 
 import { 
 	Button,
@@ -119,16 +120,31 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 	}, [])
 
 	function handleAction(input) {
-		setCalendarValue(input)
-		setDisplayDate(dayjs(input).format('YYYY-MM-DD'))
-		buildTimeSlots(input)
-		.then((res) => {
-			setTimeslotData(res)
+
+		let parsedDate = dayjs(input).format('YYYY-MM-DD')
+
+		Axios.post(process.env.REACT_APP_BACKEND_ROUTE+'/api/list/limit/date/bookings', {
+			limitDate: parsedDate
 		})
+		.then((res) => {
+			console.log(res.data)
+
+			setCalendarValue(input)
+			setDisplayDate(parsedDate)
+
+			buildTimeSlots(input, res.data)
+			.then((res) => {
+				setTimeslotData(res)
+			})
+		})
+		.catch((err) => {
+			console.error(err)
+		})
+
 	}
 
 
-	async function buildTimeSlots(data) {
+	async function buildTimeSlots(data, excludeData) {
 
 
 			async function getCurrentWeekdayBusinessHours(day) {
@@ -151,15 +167,23 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 			let currentWeekday = dayjs(data).day()
 			let businessHours = await getCurrentWeekdayBusinessHours(currentWeekday)
 
-			let res = await initTimeslots(businessHours.open, businessHours.close, 30)
+			let res = await initTimeslots(businessHours.open, businessHours.close, 30, excludeData)
 			return res
 
 
 	}
 
-	async function initTimeslots(start, end, interval) {
+	async function initTimeslots(start, end, interval, excludeData) {
 
 		return new Promise((resolve, reject) => {
+
+			let excludeTimeMap = new Map();
+			if(excludeData.length) {
+				for(let data of excludeData) {
+					excludeTimeMap.set(data.reserved_time, true)
+				}
+				excludeTimeMap.forEach((value, key) => { console.log('m###ap',key,value) } )
+			}
 
 			let timeslotArray = [];
 
@@ -170,7 +194,10 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 			let diff = dayjs.duration(endTime.diff(startTime))
 
 			while(diff.asMinutes() > 0) {
-				timeslotArray.push(currentStep.format('HH:mm'))
+				let verify = currentStep.format('HH:mm:ss')
+				if(excludeTimeMap.has(verify) === false) {
+					timeslotArray.push(currentStep.format('HH:mm'))
+				}
 				currentStep = currentStep.add(interval, 'minute')
 				diff = dayjs.duration(endTime.diff(currentStep))
 
