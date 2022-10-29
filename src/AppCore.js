@@ -13,6 +13,9 @@ function AppCore() {
 	const [selectedServiceId, setSelectedServiceId] = useState();
 	const [selectedServiceName, setSelectedServiceName] = useState();
 	const [selectedServicePrice, setSelectedServicePrice] = useState();
+	const [selectedServiceVariantId, setSelectedServiceVariantId] = useState();
+	const [selectedServiceVariantName, setSelectedServiceVariantName] = useState();
+	const [selectedServiceVariantPrice, setSelectedServiceVariantPrice] = useState();
 	const [selectedDate, setSelectedDate] = useState();
 	const [selectedTime, setSelectedTime] = useState();
 
@@ -21,14 +24,17 @@ function AppCore() {
 	const [customerEmail, setCustomerEmail] = useState();
 	const [customerPhone, setCustomerPhone] = useState();
 
-    return (
-    		<Router basename="/app">
+	return (
+			<Router basename="/app">
 				<Routes>
 					<Route exact path="/" element={ 
 						<Entry
 							setSelectedServiceId={selectedServiceId => setSelectedServiceId(selectedServiceId)}
 							setSelectedServiceName={selectedServiceName => setSelectedServiceName(selectedServiceName)}
 							setSelectedServicePrice={selectedServicePrice => setSelectedServicePrice(selectedServicePrice)}
+							setSelectedServiceVariantId={selectedServiceVariantId => setSelectedServiceVariantId(selectedServiceVariantId)}
+							setSelectedServiceVariantName={selectedServiceVariantName => setSelectedServiceVariantName(selectedServiceVariantName)}
+							setSelectedServiceVariantPrice={selectedServiceVariantPrice => setSelectedServiceVariantPrice(selectedServiceVariantPrice)}
 						/>} />
 					<Route exact path="/booking" element={ 
 						<Booking

@@ -125,53 +125,56 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 	function handleAction(input) {
 
 		let parsedDate = dayjs(input).format('YYYY-MM-DD')
-		setTimeslotLoading(true)
+		if(displayDate !== parsedDate) {
 
-		Axios.post(process.env.REACT_APP_BACKEND_ROUTE+'/api/list/limit/date/bookings', {
-			limitDate: parsedDate
-		})
-		.then((res) => {
-
-			setCalendarValue(input)
-			setDisplayDate(parsedDate)
-
-			buildTimeSlots(input, res.data)
-			.then((res) => {
-				setTimeslotData(res)
-				setTimeslotLoading(false)
+			setTimeslotLoading(true)
+	
+			Axios.post(process.env.REACT_APP_BACKEND_ROUTE+'/api/list/limit/date/bookings', {
+				limitDate: parsedDate
 			})
-		})
-		.catch((err) => {
-			console.error(err)
-		})
+			.then((res) => {
+	
+				setCalendarValue(input)
+				setDisplayDate(parsedDate)
+	
+				buildTimeSlots(input, res.data)
+				.then((res) => {
+					setTimeslotData(res)
+					setTimeslotLoading(false)
+				})
+			})
+			.catch((err) => {
+				console.error(err)
+			})
+		}
 
 	}
 
 
 	async function buildTimeSlots(data, excludeData) {
 
-			async function getCurrentWeekdayBusinessHours(day) {
+		async function getCurrentWeekdayBusinessHours(day) {
 
-				return new Promise((resolve, reject) => {
+			return new Promise((resolve, reject) => {
 
-					for(let timegroup of timegroupData) {
-						if(timegroup.day === day) {
-							resolve({
-								open: timegroup.open,
-								close: timegroup.close
-							})
-						}
+				for(let timegroup of timegroupData) {
+					if(timegroup.day === day) {
+						resolve({
+							open: timegroup.open,
+							close: timegroup.close
+						})
 					}
+				}
 
-				})
+			})
 
-			}
+		}
 
-			let currentWeekday = dayjs(data).day()
-			let businessHours = await getCurrentWeekdayBusinessHours(currentWeekday)
+		let currentWeekday = dayjs(data).day()
+		let businessHours = await getCurrentWeekdayBusinessHours(currentWeekday)
 
-			let res = await initTimeslots(businessHours.open, businessHours.close, 30, excludeData)
-			return res
+		let res = await initTimeslots(businessHours.open, businessHours.close, 30, excludeData)
+		return res
 
 
 	}
@@ -224,7 +227,7 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 		)}
 		{!loading && (
 			<Container style={{ position: 'relative' }} size="xs" px="xs" py="xl">
-				<div style={{ position: 'absolute', top: 0, left: 0, marginTop: '1rem', marginLeft: '1rem' }}>
+				<div style={{ position: 'absolute', top: '1.25rem', left: '1rem' }}>
 					<ActionIcon color="dark" radius="md" variant="outline" size="xl" onClick={() => {navigate('/')}}>
 						<IconArrowNarrowLeft size={34} />
 					</ActionIcon>
@@ -244,6 +247,7 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 							allowLevelChange={false}
 							firstDayOfWeek="sunday"
 							excludeDate={(date) => handleExcludeDays(date)}
+							size="md"
 						/>
 					</Card>
 				</Center>

@@ -135,7 +135,27 @@ app.get('/api/list/services', (req, res) => {
 			res.status(500).send(err);
 			return false;
 		}
-		res.send(result)
+
+		let serviceList = result
+
+		const fetchVariantRequest = "SELECT * FROM res_services_variants WHERE deleted=0"
+		connection.query(fetchVariantRequest, (err, result) => {
+			if(err) {
+				console.log('error', err);
+				res.status(500).send(err);
+				return false;
+			}
+			for(let serviceRow of serviceList) {
+				let variants = []
+				for(let variantRow of result) {
+					if(variantRow.service_id === serviceRow.service_id) {
+						variants.push(variantRow)
+					}
+				}
+				serviceRow.variants = variants
+			}
+			res.send(serviceList)
+		})
 	});
 
 });

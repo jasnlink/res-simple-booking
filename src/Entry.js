@@ -14,11 +14,15 @@ import {
 	LoadingOverlay
 } from '@mantine/core';
 
-function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServicePrice }) {
+import VariantDrawer from './components/VariantDrawer';
+
+function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServicePrice, setSelectedServiceVariantId, setSelectedServiceVariantName, setSelectedServiceVariantPrice }) {
 
 	const [loading, setLoading] = useState(true)
 	const [categories, setCategories] = useState([])
 	const [services, setServices] = useState([])
+
+	const [variantDrawerOpen, setVariantDrawerOpen] = useState(true)
 
 	useEffect(() => {
 		//fetch categories and product option groups
@@ -33,6 +37,7 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 
 			setCategories(responses[0].data)
 			setServices(responses[1].data)
+			console.log('responses[1].data',responses[1].data)
 			setLoading(false)
 
 		}))
@@ -72,16 +77,24 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 
 	let navigate = useNavigate();
 
-	function handleSelect(sId, sName, sPrice) {
-		setSelectedServiceId(sId)
-		setSelectedServiceName(sName)
-		setSelectedServicePrice(sPrice)
-		navigate('booking');
+	function handleSelect(sId, sName, sPrice, variantExist) {
+		if(variantExist) {
+			setVariantDrawerOpen(true)
+		} else {
+			setSelectedServiceId(sId)
+			setSelectedServiceName(sName)
+			setSelectedServicePrice(sPrice)
+			navigate('booking');
+		}
 	}
 
 	return (
 		<Paper p="0" m="0" sx={(theme) => ({backgroundColor: theme.colors.gray[0], minHeight: '100vh', position: 'relative'})}>
 			<LoadingOverlay visible={loading} overlayBlur={2} />
+			<VariantDrawer
+				opened={variantDrawerOpen}
+				setOpened={setVariantDrawerOpen}
+			/>
 			<Container size="xs" px="xs" py="xl">
 				<Title size="h2" align="center">
 					Ginseng Massage
@@ -101,16 +114,38 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 									<Card key={index} shadow="sm" p="xl" withBorder>
 										<Group position="apart" mb="xs">
 											<Text weight={500}>{service.name}</Text>
-											<Text>
-												{formatPrice(service.price)}
-											</Text>
+											<>
+											{! service.variants.length && (
+												<Text>
+													{formatPrice(service.price)}
+												</Text>
+											)}
+											</>
+											<>
+											{!! service.variants.length && (
+												<Text>
+													{service.variants.length} Options
+												</Text>
+											)}
+											</>
 										</Group>
 										<Text mb="xl">
 											{service.desc}
 										</Text>
-										<Button fullWidth onClick={(id, name, price) => handleSelect(service.service_id, service.name, service.price)}>
-											Select
-										</Button>
+										<>
+											{! service.variants.length && (
+												<Button fullWidth onClick={(id, name, price) => handleSelect(service.service_id, service.name, service.price, false)}>
+													Select
+												</Button>
+											)}
+										</>
+										<>
+											{!! service.variants.length && (
+												<Button fullWidth onClick={(id, name, price) => handleSelect(service.service_id, service.name, service.price, true)}>
+													Choose Options
+												</Button>
+											)}
+										</>
 									</Card>
 
 								)}
