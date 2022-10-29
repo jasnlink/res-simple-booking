@@ -16,7 +16,8 @@ import {
 	Paper,
 	Center,
 	Grid,
-	ActionIcon
+	ActionIcon,
+	LoadingOverlay
  } from '@mantine/core';
 
 import { IconArrowNarrowLeft } from '@tabler/icons';
@@ -74,6 +75,8 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 	]
 
 	const [loading, setLoading] = useState(true)
+	const [timeslotLoading, setTimeslotLoading] = useState(true)
+
 
 	const [calendarValue, setCalendarValue] = useState(null);
 	const [closedBusinessDays, setClosedBusinessDays] = useState(null);
@@ -122,12 +125,12 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 	function handleAction(input) {
 
 		let parsedDate = dayjs(input).format('YYYY-MM-DD')
+		setTimeslotLoading(true)
 
 		Axios.post(process.env.REACT_APP_BACKEND_ROUTE+'/api/list/limit/date/bookings', {
 			limitDate: parsedDate
 		})
 		.then((res) => {
-			console.log(res.data)
 
 			setCalendarValue(input)
 			setDisplayDate(parsedDate)
@@ -135,6 +138,7 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 			buildTimeSlots(input, res.data)
 			.then((res) => {
 				setTimeslotData(res)
+				setTimeslotLoading(false)
 			})
 		})
 		.catch((err) => {
@@ -145,7 +149,6 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 
 
 	async function buildTimeSlots(data, excludeData) {
-
 
 			async function getCurrentWeekdayBusinessHours(day) {
 
@@ -182,7 +185,6 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 				for(let data of excludeData) {
 					excludeTimeMap.set(data.reserved_time, true)
 				}
-				excludeTimeMap.forEach((value, key) => { console.log('m###ap',key,value) } )
 			}
 
 			let timeslotArray = [];
@@ -246,7 +248,8 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 					</Card>
 				</Center>
 				<Title size="h4" align="center" mt="xl">{displayDate}</Title>
-				<Container>
+				<Container style={{ position: 'relative' }}>
+					<LoadingOverlay visible={timeslotLoading} overlayBlur={2} />
 					<Grid mt="md" gutter="xl">
 						{timeslotData.map((timeslot, index) => (
 							<Grid.Col key={index} span={6}>

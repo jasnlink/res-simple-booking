@@ -5,6 +5,7 @@ import Entry from './Entry'
 import Booking from './Booking'
 import Process from './Process'
 import Success from './Success'
+import Admin from './Admin'
 
 function AppCore() {
 
@@ -58,6 +59,9 @@ function AppCore() {
 							customerLastName={customerLastName}
 							customerEmail={customerEmail}
 							customerPhone={customerPhone}
+						/>} />
+					<Route exact path="/admin" element={
+						<Admin
 						/>} />
 				</Routes>
 			</Router>

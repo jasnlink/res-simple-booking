@@ -20,7 +20,7 @@ import {
 	Grid,
 	ActionIcon,
 	Input,
- } from '@mantine/core';
+} from '@mantine/core';
 
 import { IconArrowNarrowLeft } from '@tabler/icons';
 
@@ -81,15 +81,15 @@ function Process({ selectedServiceId, selectedServiceName, selectedServicePrice,
 
 	let schema = Yup.object().shape({
 		firstName: Yup.string().matches(/^[aA-zZ\s]+$/).required("Enter your first name."),
-  		lastName: Yup.string().matches(/^[aA-zZ\s]+$/).required("Enter your last name."),
-  		email: Yup.string().email().required("Enter your email address."),
-  		phone: Yup.string().min(10).required("Enter your phone number.")
-  	});
+		lastName: Yup.string().matches(/^[aA-zZ\s]+$/).required("Enter your last name."),
+		email: Yup.string().email().required("Enter your email address."),
+		phone: Yup.string().min(10).required("Enter your phone number.")
+	});
 
-  	//real time form validation
-  	useEffect(() => {
+	//real time form validation
+	useEffect(() => {
 
-	    schema.validate({ 
+		schema.validate({ 
 			firstName: inputFirstName,
 			lastName: inputLastName,
 			email: inputEmail,
@@ -100,8 +100,8 @@ function Process({ selectedServiceId, selectedServiceName, selectedServicePrice,
 			setFormValidated(true)
 		})
 		.catch((err) => {
-	        setFormValidated(false)
-	    })
+			setFormValidated(false)
+		})
 
 
 	}, [inputFirstName, inputLastName, inputEmail, inputPhone])
@@ -128,7 +128,7 @@ function Process({ selectedServiceId, selectedServiceName, selectedServicePrice,
 			navigate('/success')
 		})
 		.catch((err) => {
-	       	console.log("error ", err)});
+			console.log("error ", err)});
 
 	}
 
@@ -161,7 +161,7 @@ function Process({ selectedServiceId, selectedServiceName, selectedServicePrice,
 							<div>
 								<Text weight={500}>{selectedDate}</Text>
 								<Text size="xs" color="dimmed" mt={3} mb="xl">
-							        Date
+									Date
 								</Text>
 							</div>
 							<div>
@@ -169,7 +169,7 @@ function Process({ selectedServiceId, selectedServiceName, selectedServicePrice,
 									{selectedTime}
 								</Text>
 								<Text size="xs" color="dimmed" mt={3} mb="xl">
-							        Time
+									Time
 								</Text>
 							</div>
 						</Group>
@@ -177,18 +177,18 @@ function Process({ selectedServiceId, selectedServiceName, selectedServicePrice,
 				</Card>
 				<Card shadow="sm" mt="xl" p="xl" withBorder>
 					<Input.Wrapper mb="md" label="First name" required>
-				      <Input placeholder="Your first name" value={inputFirstName} onChange={(event) => setInputFirstName(event.currentTarget.value)} />
-				    </Input.Wrapper>
+					<Input placeholder="Your first name" value={inputFirstName} onChange={(event) => setInputFirstName(event.currentTarget.value)} />
+					</Input.Wrapper>
 					<Input.Wrapper mb="md" label="Last name" required>
-				      <Input placeholder="Your last name" value={inputLastName} onChange={(event) => setInputLastName(event.currentTarget.value)} />
-				    </Input.Wrapper>
+					<Input placeholder="Your last name" value={inputLastName} onChange={(event) => setInputLastName(event.currentTarget.value)} />
+					</Input.Wrapper>
 					<Input.Wrapper mb="md" label="Email address" required>
-				      <Input placeholder="Your email" value={inputEmail} onChange={(event) => setInputEmail(event.currentTarget.value)} />
-				    </Input.Wrapper>
+					<Input placeholder="Your email" value={inputEmail} onChange={(event) => setInputEmail(event.currentTarget.value)} />
+					</Input.Wrapper>
 					<Input.Wrapper mb="xl" label="Phone number" required>
-				      <Input placeholder="Your phone number" value={inputPhone} onChange={(event) => setInputPhone(event.currentTarget.value)} />
-				    </Input.Wrapper>
-				    <Button mt="xl" fullWidth size="md" disabled={!formValidated} onClick={handleSubmit} loading={submitLoading}>
+					<Input placeholder="Your phone number" value={inputPhone} onChange={(event) => setInputPhone(event.currentTarget.value)} />
+					</Input.Wrapper>
+					<Button mt="xl" fullWidth size="md" disabled={!formValidated} onClick={handleSubmit} loading={submitLoading}>
 						Book appointment
 					</Button>
 				</Card>

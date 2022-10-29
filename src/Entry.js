@@ -11,8 +11,8 @@ import {
 	Text,
 	Group,
 	Paper,
-	Accordion,
- } from '@mantine/core';
+	LoadingOverlay
+} from '@mantine/core';
 
 function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServicePrice }) {
 
@@ -37,73 +37,38 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 
 		}))
 		.catch((err) => {
-   			console.log("error ", err)});
+			console.log("error ", err)});
 
 	}, [])
 
- //  const data = [
-	// {
-	// 	service_id: 0,
-	// 	title: 'Service 1',
-	// 	desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.',
-	// 	price: 9900,
-	// 	category_id: 0
-	// },
-	// {
-	// 	service_id: 1,
-	// 	title: 'Service 2',
-	// 	desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.',
-	// 	price: 19900,
-	// 	category_id: 0
-	// },
-	// {
-	// 	service_id: 2,
-	// 	title: 'Service 3',
-	// 	desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.',
-	// 	price: 29900,
-	// 	category_id: 1
-	// }
- //  ]
+  	//formats price from cents to dollars
+	function formatPrice(price) {
 
- //  const catData = [
-	// {
-	//   title: 'Category 1',
-	//   category_id: 0
-	// },
-	// {
-	//   title: 'Category 2',
-	//   category_id: 1
-	// }
- //  ]
+		if (price === 0) {
+			return '$0.00'
+		}
+		if(!price) {
+			return null
+		}
 
-  //formats price from cents to dollars
-  function formatPrice(price) {
+		price = price.toString()
 
-	if (price === 0) {
-		return '$0.00'
-	}
-	if(!price) {
+		if (price.length > 2) {
+			let dollars = price.slice(0, -2)
+			let cents = price.slice(-2, price.length)
+
+			return '$' + dollars + '.' + cents
+		}
+		if (price.length === 2) {
+			return '$0.' + price
+		}
+		if (price.length === 1) {
+			return '$0.0' + price
+		}
+		
 		return null
-	}
 
-	price = price.toString()
-
-	if (price.length > 2) {
-		let dollars = price.slice(0, -2)
-		let cents = price.slice(-2, price.length)
-
-		return '$' + dollars + '.' + cents
 	}
-	if (price.length === 2) {
-		return '$0.' + price
-	}
-	if (price.length === 1) {
-		return '$0.0' + price
-	}
-	
-	return null
-
-  }
 
 	let navigate = useNavigate();
 
@@ -115,17 +80,14 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 	}
 
 	return (
-		<Paper p="0" m="0" sx={(theme) => ({backgroundColor: theme.colors.gray[0], minHeight: '100vh'})}>
-		{!!loading && (
-			<div>loading...</div>
-		)}
-		{!loading && (
+		<Paper p="0" m="0" sx={(theme) => ({backgroundColor: theme.colors.gray[0], minHeight: '100vh', position: 'relative'})}>
+			<LoadingOverlay visible={loading} overlayBlur={2} />
 			<Container size="xs" px="xs" py="xl">
 				<Title size="h2" align="center">
-				  Ginseng Massage
+					Ginseng Massage
 				</Title>
 				<Text weight={500} align="center" mb="xl">
-				  Book your appointment
+					Book your appointment
 				</Text>
 				<Stack>
 					{categories.map((category, index) => (
@@ -159,7 +121,6 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 					))}
 				</Stack>
 			</Container>
-		)}
 		</Paper>
 	);
 }
