@@ -10,12 +10,13 @@ import {
 	Paper,
 	LoadingOverlay,
 	Drawer,
-	MantineProvider 
+	MantineProvider,
+	Divider, 
+	UnstyledButton
 } from '@mantine/core';
 
 
-function VariantDrawer({ opened, setOpened }) {
-
+function VariantDrawer({ title, opened, setOpened, variants }) {
 
 
 	return (
@@ -30,9 +31,34 @@ function VariantDrawer({ opened, setOpened }) {
 									'800px',
 								margin:
 									'auto',
+								borderRadius:
+									'4px',
+								overflow:
+									'auto',
+									background: 'white'
 							},
+							header: {
+								position: 'sticky',
+								top: '0',
+								borderBottom: `1px solid `+theme.colors.gray[3],
+								background: 'white',
+								padding: '1rem 1rem'
+							}
 						}),
 					},
+					UnstyledButton: {
+						styles: (theme) => ({
+							root: {
+								border: 
+									`1px solid `+theme.colors.gray[3],
+								borderRadius:
+									'4px',
+								padding:
+									'16px 0',
+
+							}
+						})
+					}
 				},
 			}}
 		>
@@ -40,12 +66,27 @@ function VariantDrawer({ opened, setOpened }) {
 				position='bottom'
 				opened={opened}
 				onClose={() => setOpened(false)}
-				size='md'
-				title='register'
-				padding='xl'
+				title={(
+						<>
+							<Title size="h3">{title}</Title>
+						</>
+					)}
 			>
 				<Container>
-					<div>hello</div>
+					<Text mt='sm' weight={500}>Choose your option</Text>
+					<Container>
+						<Stack mt='lg'>
+							{variants.map((variant, index) => (
+								<Button
+									variant="outline"
+								>
+									<Container>
+										{variant.name}
+									</Container>
+								</Button>
+							))}
+						</Stack>
+					</Container>
 				</Container>
 			</Drawer>
 		</MantineProvider>
