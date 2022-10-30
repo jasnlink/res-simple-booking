@@ -16,13 +16,14 @@ import {
 
 import VariantDrawer from './components/VariantDrawer';
 
-function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServicePrice, setSelectedServiceVariantId, setSelectedServiceVariantName, setSelectedServiceVariantPrice }) {
+function Entry({ selectedServiceName, setSelectedServiceId, setSelectedServiceName, setSelectedServicePrice, setSelectedServiceVariantId, setSelectedServiceVariantName, setSelectedServiceVariantPrice }) {
 
 	const [loading, setLoading] = useState(true)
 	const [categories, setCategories] = useState([])
 	const [services, setServices] = useState([])
 
 	const [variantDrawerOpen, setVariantDrawerOpen] = useState(true)
+	const [selectedVariants, setSelectedVariants] = useState([])
 
 	useEffect(() => {
 		//fetch categories and product option groups
@@ -77,13 +78,16 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 
 	let navigate = useNavigate();
 
-	function handleSelect(sId, sName, sPrice, variantExist) {
+	function handleSelect(sId, sName, sPrice, variantExist, variants=[]) {
+		
+		setSelectedServiceId(sId)
+		setSelectedServiceName(sName)
+		setSelectedServicePrice(sPrice)
+
 		if(variantExist) {
+			setSelectedVariants(variants)
 			setVariantDrawerOpen(true)
 		} else {
-			setSelectedServiceId(sId)
-			setSelectedServiceName(sName)
-			setSelectedServicePrice(sPrice)
 			navigate('booking');
 		}
 	}
@@ -92,8 +96,10 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 		<Paper p="0" m="0" sx={(theme) => ({backgroundColor: theme.colors.gray[0], minHeight: '100vh', position: 'relative'})}>
 			<LoadingOverlay visible={loading} overlayBlur={2} />
 			<VariantDrawer
+				title={selectedServiceName}
 				opened={variantDrawerOpen}
 				setOpened={setVariantDrawerOpen}
+				variants={selectedVariants}
 			/>
 			<Container size="xs" px="xs" py="xl">
 				<Title size="h2" align="center">
@@ -141,7 +147,7 @@ function Entry({ setSelectedServiceId, setSelectedServiceName, setSelectedServic
 										</>
 										<>
 											{!! service.variants.length && (
-												<Button fullWidth onClick={(id, name, price) => handleSelect(service.service_id, service.name, service.price, true)}>
+												<Button fullWidth onClick={(id, name, price) => handleSelect(service.service_id, service.name, service.price, true, service.variants)}>
 													Choose Options
 												</Button>
 											)}
