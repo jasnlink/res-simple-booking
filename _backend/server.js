@@ -55,7 +55,10 @@ const PORT = process.env.PORT || 3500;
 
 //express json cors setup
 let app = express();
-app.use(cors());
+app.use(cors({
+	origin: '*',
+	methods: ['GET', 'POST'],
+}));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json({extended: true}));
 
@@ -160,6 +163,23 @@ app.get('/api/list/services', (req, res) => {
 
 });
 
+app.post('/api/list/timegroups', (req, res) => {
+
+	console.log('fetching all timegroups...')
+
+	// fetch categories
+	const fetchTimegroupRequest = "SELECT * FROM res_timegroups"
+	connection.query(fetchTimegroupRequest, (err, result) => {
+		if(err) {
+			console.log('error...', err);
+			res.status(500).send(err);
+			return false;
+		}
+		res.send(result)
+	});
+
+});
+
 app.post('/api/list/limit/date/bookings', (req, res) => {
 
 	const limitDate = req.body.limitDate;
@@ -179,6 +199,12 @@ app.post('/api/list/limit/date/bookings', (req, res) => {
 });
 
 app.post('/api/create/booking', (req, res) => {
+
+	let variantId = 0
+
+	if(req.body.variantId) {
+		variantId = req.body.variantId
+	}
 
 	const serviceId = req.body.serviceId;
 	const bookingDate = req.body.bookingDate;
@@ -205,8 +231,8 @@ app.post('/api/create/booking', (req, res) => {
 		let customerId = result.insertId;
 
 		// insert new booking
-		const insertBookingRequest = "INSERT INTO res_bookings (reserved_date, reserved_time, customer_id, service_id) VALUES (?,?,?,?);"
-		connection.query(insertBookingRequest, [bookingDate, bookingTime, customerId, serviceId], (err, result) => {
+		const insertBookingRequest = "INSERT INTO res_bookings (reserved_date, reserved_time, customer_id, service_id, variant_id) VALUES (?,?,?,?,?);"
+		connection.query(insertBookingRequest, [bookingDate, bookingTime, customerId, serviceId, variantId], (err, result) => {
 			console.log('insert new booking...', bookingDate, bookingTime)
 			if(err) {
 				console.log('error...', err);

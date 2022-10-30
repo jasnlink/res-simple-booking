@@ -14,12 +14,27 @@ import {
 	Grid,
 	ActionIcon,
 	Input,
-	ThemeIcon 
+	ThemeIcon,
+	Divider
  } from '@mantine/core';
 
 import { IconCircleCheck } from '@tabler/icons';
 
-function Success({ selectedServiceId, selectedServiceName, selectedServicePrice, selectedDate, selectedTime,customerFirstName, customerLastName, customerEmail, customerPhone }) {
+function Success({
+	selectedServiceId,
+	selectedServiceName,
+	selectedServicePrice,
+	selectedServiceDuration,
+	selectedServiceVariantId,
+	selectedServiceVariantName,
+	selectedServiceVariantPrice,
+	selectedServiceVariantDuration,
+	selectedDate,
+	selectedTime,customerFirstName,
+	customerLastName,
+	customerEmail,
+	customerPhone
+}) {
 
 	let navigate = useNavigate();
 	const [loading, setLoading] = useState(false)
@@ -82,27 +97,72 @@ function Success({ selectedServiceId, selectedServiceName, selectedServicePrice,
 					</Card.Section>
 					<Card.Section p="xl" sx={(theme) => ({borderTop: `1px solid `+theme.colors.gray[3]})}>
 						<Title size="h2" align="center" mb="xl">{customerFirstName} {customerLastName}</Title>
-						<Group position="apart" mb="xl">
-							<div>
-								<Text weight={500}>{selectedServiceName}</Text>
-							</div>
-							<Text>
-								{formatPrice(selectedServicePrice)}
+						<Group position="apart" mb="md">
+						<div>
+							<Text weight={500}>
+								{selectedServiceName}
 							</Text>
+							{!!selectedServiceVariantId && (
+								<Text pl='.5rem'>
+									{selectedServiceVariantName}
+								</Text>
+							)}
+						</div>
+						{!selectedServiceVariantId && (
+							<>
+								<div>
+									<Text size="xs" color="dimmed" mb={3}>
+										Duration
+									</Text>
+									<Text>
+										{selectedServiceDuration} mins
+									</Text>
+								</div>
+								<div>
+									<Text size="xs" color="dimmed" mb={3}>
+										Price
+									</Text>
+									<Text>
+										{formatPrice(selectedServicePrice)}
+									</Text>
+								</div>
+							</>
+						)}
+						{!!selectedServiceVariantId && (
+							<>
+								<div>
+									<Text size="xs" color="dimmed" mb={3}>
+										Duration
+									</Text>
+									<Text>
+										{selectedServiceVariantDuration} mins
+									</Text>
+								</div>
+								<div>
+									<Text size="xs" color="dimmed" mb={3}>
+										Price
+									</Text>
+									<Text>
+										{formatPrice(selectedServiceVariantPrice)}
+									</Text>
+								</div>
+							</>
+						)}
 						</Group>
+						<Divider my="1.5rem" mx="-1.5rem" />
 						<Group position="apart">
 							<div>
-								<Text weight={500}>{selectedDate}</Text>
-								<Text size="xs" color="dimmed" mt={3} mb="xl">
-							        Date
+								<Text size="xs" color="dimmed" mb={3}>
+									Date
 								</Text>
+								<Text weight={500}>{selectedDate}</Text>
 							</div>
 							<div>
+								<Text size="xs" color="dimmed" mb={3}>
+									Time
+								</Text>
 								<Text>
 									{selectedTime}
-								</Text>
-								<Text size="xs" color="dimmed" mt={3} mb="xl">
-							        Time
 								</Text>
 							</div>
 						</Group>

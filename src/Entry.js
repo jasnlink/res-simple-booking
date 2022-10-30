@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from "react-router-dom";
 import Axios from 'axios';
 
 import { 
@@ -16,13 +16,23 @@ import {
 
 import VariantDrawer from './components/VariantDrawer';
 
-function Entry({ selectedServiceName, setSelectedServiceId, setSelectedServiceName, setSelectedServicePrice, setSelectedServiceVariantId, setSelectedServiceVariantName, setSelectedServiceVariantPrice }) {
+function Entry({ 
+	selectedServiceName,
+	setSelectedServiceId,
+	setSelectedServiceName,
+	setSelectedServicePrice,
+	setSelectedServiceDuration,
+	setSelectedServiceVariantId,
+	setSelectedServiceVariantName,
+	setSelectedServiceVariantPrice,
+	setSelectedServiceVariantDuration
+}) {
 
 	const [loading, setLoading] = useState(true)
 	const [categories, setCategories] = useState([])
 	const [services, setServices] = useState([])
 
-	const [variantDrawerOpen, setVariantDrawerOpen] = useState(true)
+	const [variantDrawerOpen, setVariantDrawerOpen] = useState(false)
 	const [selectedVariants, setSelectedVariants] = useState([])
 
 	useEffect(() => {
@@ -38,7 +48,6 @@ function Entry({ selectedServiceName, setSelectedServiceId, setSelectedServiceNa
 
 			setCategories(responses[0].data)
 			setServices(responses[1].data)
-			console.log('responses[1].data',responses[1].data)
 			setLoading(false)
 
 		}))
@@ -78,11 +87,12 @@ function Entry({ selectedServiceName, setSelectedServiceId, setSelectedServiceNa
 
 	let navigate = useNavigate();
 
-	function handleSelect(sId, sName, sPrice, variantExist, variants=[]) {
+	function handleSelect(sId, sName, sPrice, sDuration, variantExist, variants=[]) {
 		
 		setSelectedServiceId(sId)
 		setSelectedServiceName(sName)
 		setSelectedServicePrice(sPrice)
+		setSelectedServiceDuration(sDuration)
 
 		if(variantExist) {
 			setSelectedVariants(variants)
@@ -90,6 +100,15 @@ function Entry({ selectedServiceName, setSelectedServiceId, setSelectedServiceNa
 		} else {
 			navigate('booking');
 		}
+	}
+
+	function handleVariantSelect(vId, vName, vPrice, vDuration) {
+		setVariantDrawerOpen(false)
+		setSelectedServiceVariantId(vId)
+		setSelectedServiceVariantName(vName)
+		setSelectedServiceVariantPrice(vPrice)
+		setSelectedServiceVariantDuration(vDuration)
+		navigate('booking');
 	}
 
 	return (
@@ -100,6 +119,7 @@ function Entry({ selectedServiceName, setSelectedServiceId, setSelectedServiceNa
 				opened={variantDrawerOpen}
 				setOpened={setVariantDrawerOpen}
 				variants={selectedVariants}
+				onSelect={handleVariantSelect}
 			/>
 			<Container size="xs" px="xs" py="xl">
 				<Title size="h2" align="center">
@@ -109,15 +129,15 @@ function Entry({ selectedServiceName, setSelectedServiceId, setSelectedServiceNa
 					Book your appointment
 				</Text>
 				<Stack>
-					{categories.map((category, index) => (
-					<>
-						<Title key={index} size="h2" mt="md">{category.name}</Title>
+					{categories.map((category, cIndex) => (
+					<React.Fragment key={category.category_id}>
+						<Title size="h2" mt="md">{category.name}</Title>
 						<Stack>
-							{services.map((service, index) => (
-							<>
+							{services.map((service, sIndex) => (
+							<React.Fragment key={service.service_id}>
 								{service.category_id === category.category_id && (
 
-									<Card key={index} shadow="sm" p="xl" withBorder>
+									<Card shadow="sm" p="xl" withBorder>
 										<Group position="apart" mb="xs">
 											<Text weight={500}>{service.name}</Text>
 											<>
@@ -140,14 +160,14 @@ function Entry({ selectedServiceName, setSelectedServiceId, setSelectedServiceNa
 										</Text>
 										<>
 											{! service.variants.length && (
-												<Button fullWidth onClick={(id, name, price) => handleSelect(service.service_id, service.name, service.price, false)}>
+												<Button fullWidth onClick={(id, name, price, duration) => handleSelect(service.service_id, service.name, service.price, service.duration_mins, false)}>
 													Select
 												</Button>
 											)}
 										</>
 										<>
 											{!! service.variants.length && (
-												<Button fullWidth onClick={(id, name, price) => handleSelect(service.service_id, service.name, service.price, true, service.variants)}>
+												<Button fullWidth onClick={(id, name, price, duration) => handleSelect(service.service_id, service.name, service.price, service.duration_mins, true, service.variants)}>
 													Choose Options
 												</Button>
 											)}
@@ -155,10 +175,10 @@ function Entry({ selectedServiceName, setSelectedServiceId, setSelectedServiceNa
 									</Card>
 
 								)}
-							</>
+							</React.Fragment>
 							))}
 						</Stack>
-					</>
+					</React.Fragment>
 					))}
 				</Stack>
 			</Container>

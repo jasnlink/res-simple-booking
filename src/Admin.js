@@ -26,16 +26,16 @@ function Admin() {
 			title: 'Appointments'
 		},
 		{
-			title: 'Services'
+			title: 'Customers'
 		},
 		{
-			title: 'Categories'
+			title: 'Manage Services'
+		},
+		{
+			title: 'Manage Categories'
 		},
 		{
 			title: 'Business Hours'
-		},
-		{
-			title: 'Customers'
 		}
 	]
 

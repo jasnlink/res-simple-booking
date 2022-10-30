@@ -26,7 +26,22 @@ import { IconArrowNarrowLeft } from '@tabler/icons';
 
 
 
-function Process({ selectedServiceId, selectedServiceName, selectedServicePrice, selectedDate, selectedTime, setCustomerFirstName, setCustomerLastName, setCustomerEmail, setCustomerPhone }) {
+function Process({ 
+	selectedServiceId,
+	selectedServiceName,
+	selectedServicePrice,
+	selectedServiceDuration,
+	selectedServiceVariantId,
+	selectedServiceVariantName,
+	selectedServiceVariantPrice,
+	selectedServiceVariantDuration,
+	selectedDate,
+	selectedTime,
+	setCustomerFirstName,
+	setCustomerLastName,
+	setCustomerEmail,
+	setCustomerPhone
+}) {
 
 	let navigate = useNavigate();
 	const [loading, setLoading] = useState(false)
@@ -116,6 +131,7 @@ function Process({ selectedServiceId, selectedServiceName, selectedServicePrice,
 		setCustomerPhone(inputPhone)
 
 		Axios.post(process.env.REACT_APP_BACKEND_ROUTE+"/api/create/booking", {
+			variantId: selectedServiceVariantId,
 			serviceId: selectedServiceId,
 			bookingDate: selectedDate,
 			bookingTime: selectedTime,
@@ -150,26 +166,70 @@ function Process({ selectedServiceId, selectedServiceName, selectedServicePrice,
 				<Card shadow="sm" p="xl" withBorder>
 					<Group position="apart" mb="md">
 						<div>
-							<Text weight={500}>{selectedServiceName}</Text>
+							<Text weight={500}>
+								{selectedServiceName}
+							</Text>
+							{!!selectedServiceVariantId && (
+								<Text pl='.5rem'>
+									{selectedServiceVariantName}
+								</Text>
+							)}
 						</div>
-						<Text>
-							{formatPrice(selectedServicePrice)}
-						</Text>
+						{!selectedServiceVariantId && (
+							<>
+								<div>
+									<Text size="xs" color="dimmed" mb={3}>
+										Duration
+									</Text>
+									<Text>
+										{selectedServiceDuration} mins
+									</Text>
+								</div>
+								<div>
+									<Text size="xs" color="dimmed" mb={3}>
+										Price
+									</Text>
+									<Text>
+										{formatPrice(selectedServicePrice)}
+									</Text>
+								</div>
+							</>
+						)}
+						{!!selectedServiceVariantId && (
+							<>
+								<div>
+									<Text size="xs" color="dimmed" mb={3}>
+										Duration
+									</Text>
+									<Text>
+										{selectedServiceVariantDuration} mins
+									</Text>
+								</div>
+								<div>
+									<Text size="xs" color="dimmed" mb={3}>
+										Price
+									</Text>
+									<Text>
+										{formatPrice(selectedServiceVariantPrice)}
+									</Text>
+								</div>
+							</>
+						)}
 					</Group>
 					<Card.Section p="xl" sx={(theme) => ({borderTop: `1px solid `+theme.colors.gray[3]})}>
 						<Group position="apart">
 							<div>
-								<Text weight={500}>{selectedDate}</Text>
-								<Text size="xs" color="dimmed" mt={3} mb="xl">
+								<Text size="xs" color="dimmed" mb={3}>
 									Date
 								</Text>
+								<Text weight={500}>{selectedDate}</Text>
 							</div>
 							<div>
+								<Text size="xs" color="dimmed" mb={3}>
+									Time
+								</Text>
 								<Text>
 									{selectedTime}
-								</Text>
-								<Text size="xs" color="dimmed" mt={3} mb="xl">
-									Time
 								</Text>
 							</div>
 						</Group>

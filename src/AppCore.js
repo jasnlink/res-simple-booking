@@ -13,9 +13,13 @@ function AppCore() {
 	const [selectedServiceId, setSelectedServiceId] = useState();
 	const [selectedServiceName, setSelectedServiceName] = useState();
 	const [selectedServicePrice, setSelectedServicePrice] = useState();
+	const [selectedServiceDuration, setSelectedServiceDuration] = useState();
+
 	const [selectedServiceVariantId, setSelectedServiceVariantId] = useState();
 	const [selectedServiceVariantName, setSelectedServiceVariantName] = useState();
 	const [selectedServiceVariantPrice, setSelectedServiceVariantPrice] = useState();
+	const [selectedServiceVariantDuration, setSelectedServiceVariantDuration] = useState();
+
 	const [selectedDate, setSelectedDate] = useState();
 	const [selectedTime, setSelectedTime] = useState();
 
@@ -33,9 +37,11 @@ function AppCore() {
 							setSelectedServiceId={selectedServiceId => setSelectedServiceId(selectedServiceId)}
 							setSelectedServiceName={selectedServiceName => setSelectedServiceName(selectedServiceName)}
 							setSelectedServicePrice={selectedServicePrice => setSelectedServicePrice(selectedServicePrice)}
+							setSelectedServiceDuration={selectedServiceDuration => setSelectedServiceDuration(selectedServiceDuration)}
 							setSelectedServiceVariantId={selectedServiceVariantId => setSelectedServiceVariantId(selectedServiceVariantId)}
 							setSelectedServiceVariantName={selectedServiceVariantName => setSelectedServiceVariantName(selectedServiceVariantName)}
 							setSelectedServiceVariantPrice={selectedServiceVariantPrice => setSelectedServiceVariantPrice(selectedServiceVariantPrice)}
+							setSelectedServiceVariantDuration={selectedServiceVariantDuration => setSelectedServiceVariantDuration(selectedServiceVariantDuration)}
 						/>} />
 					<Route exact path="/booking" element={ 
 						<Booking
@@ -48,6 +54,11 @@ function AppCore() {
 							selectedServiceId={selectedServiceId}
 							selectedServiceName={selectedServiceName}
 							selectedServicePrice={selectedServicePrice}
+							selectedServiceDuration={selectedServiceDuration}
+							selectedServiceVariantId={selectedServiceVariantId}
+							selectedServiceVariantName={selectedServiceVariantName}
+							selectedServiceVariantPrice={selectedServiceVariantPrice}
+							selectedServiceVariantDuration={selectedServiceVariantDuration}
 							selectedDate={selectedDate}
 							selectedTime={selectedTime}
 							setCustomerFirstName={customerFirstName => setCustomerFirstName(customerFirstName)}
@@ -60,6 +71,11 @@ function AppCore() {
 							selectedServiceId={selectedServiceId}
 							selectedServiceName={selectedServiceName}
 							selectedServicePrice={selectedServicePrice}
+							selectedServiceDuration={selectedServiceDuration}
+							selectedServiceVariantId={selectedServiceVariantId}
+							selectedServiceVariantName={selectedServiceVariantName}
+							selectedServiceVariantPrice={selectedServiceVariantPrice}
+							selectedServiceVariantDuration={selectedServiceVariantDuration}
 							selectedDate={selectedDate}
 							selectedTime={selectedTime}
 							customerFirstName={customerFirstName}

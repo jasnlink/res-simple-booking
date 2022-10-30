@@ -29,54 +29,11 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 	dayjs.extend(customParseFormat)
 	let navigate = useNavigate();
 
-	let timegroupData = [
-		// {
-		// 	timegroup_id: 0,
-		// 	day: 0,
-		// 	open: '9:00:00',
-		// 	close: '17:00:00'
-		// },
-		{
-			timegroup_id: 1,
-			day: 1,
-			open: '9:00:00',
-			close: '17:00:00'
-		},
-		{
-			timegroup_id: 2,
-			day: 2,
-			open: '9:00:00',
-			close: '17:00:00'
-		},
-		{
-			timegroup_id: 3,
-			day: 3,
-			open: '9:00:00',
-			close: '13:00:00'
-		},
-		{
-			timegroup_id: 4,
-			day: 4,
-			open: '9:00:00',
-			close: '17:00:00'
-		},
-		{
-			timegroup_id: 5,
-			day: 5,
-			open: '9:00:00',
-			close: '17:00:00'
-		},
-		// {
-		// 	timegroup_id: 6,
-		// 	day: 6,
-		// 	open: '9:00:00',
-		// 	close: '17:00:00'
-		// },
-	]
-
 	const [loading, setLoading] = useState(true)
 	const [timeslotLoading, setTimeslotLoading] = useState(true)
 
+	const [currentDateTime, setCurrentDateTime] = useState(dayjs());
+	const [timegroupData, setTimegroupData] = useState([]);
 
 	const [calendarValue, setCalendarValue] = useState(null);
 	const [closedBusinessDays, setClosedBusinessDays] = useState(null);
@@ -84,17 +41,18 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 	const [timeslotData, setTimeslotData] = useState([])
 
 	// handles determining which days are closed from the received timegroup data
-	async function getClosedBusinessDays() {
+	async function getClosedBusinessDays(timegroupData) {
 
 		return new Promise((resolve, reject) => {
 
 			let res = []
-			let days = [0,1,2,3,4,5,6]
 
 			for(let timegroup of timegroupData) {
-				days = days.filter(day => day !== timegroup.day)
+				if(timegroup.is_closed === 1) {
+					res.push(timegroup.day)
+				}
 			}
-			resolve(setClosedBusinessDays(days))
+			resolve(setClosedBusinessDays(res))
 
 		})
 	}
@@ -115,10 +73,18 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 			navigate('/')
 		}
 
-		getClosedBusinessDays()
-		.then(() => {
-			setLoading(false)
+		const request = process.env.REACT_APP_BACKEND_ROUTE+'/api/list/timegroups'
+		Axios.post(request)
+		.then((response) => {
+
+			setTimegroupData(response.data)
+
+			getClosedBusinessDays(response.data)
+			.then(() => {
+				setLoading(false)
+			})
 		})
+
 
 	}, [])
 
@@ -170,12 +136,46 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 
 		}
 
+		function roundToNextInterval(intervalMins) {
+
+			let tempCurrentDateTime = currentDateTime
+
+			let mins = tempCurrentDateTime.minute()
+			let rounded = Math.ceil(mins/intervalMins)*intervalMins
+
+			if(rounded >= 60) {
+				tempCurrentDateTime = tempCurrentDateTime.add(1, 'hours')
+				tempCurrentDateTime = tempCurrentDateTime.minute(rounded-60)
+			} else {
+				tempCurrentDateTime = tempCurrentDateTime.minute(rounded)
+			}
+
+			tempCurrentDateTime = tempCurrentDateTime.second(0)
+
+			return tempCurrentDateTime
+		}
+
+		let res
+
 		let currentWeekday = dayjs(data).day()
 		let businessHours = await getCurrentWeekdayBusinessHours(currentWeekday)
+		if(dayjs(data).format('YYYY-MM-DD') === currentDateTime.format('YYYY-MM-DD')) {
 
-		let res = await initTimeslots(businessHours.open, businessHours.close, 30, excludeData)
+			let dayjsbusinessHoursOpen = dayjs(dayjs(data).format('YYYY-MM-DD')+'-'+businessHours.open, 'YYYY-MM-DD-HH:mm:ss')
+
+			if(currentDateTime.diff(dayjsbusinessHoursOpen) >= 0) {
+				let currentRoundedTime = roundToNextInterval(30)
+				res = await initTimeslots(currentRoundedTime, businessHours.close, 30, excludeData)
+			} else {
+				res = await initTimeslots(businessHours.open, businessHours.close, 30, excludeData)
+			}
+
+		} else {
+
+			res = await initTimeslots(businessHours.open, businessHours.close, 30, excludeData)
+		}
+		
 		return res
-
 
 	}
 
@@ -221,9 +221,9 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 	}
 
 	return (
-		<Paper p="0" m="0" sx={(theme) => ({backgroundColor: theme.colors.gray[0], minHeight: '100vh'})}>
+		<Paper p="0" m="0" sx={(theme) => ({backgroundColor: theme.colors.gray[0], minHeight: '100vh', position: 'relative'})}>
 		{!!loading && (
-			<div>loading...</div>
+			<LoadingOverlay visible={loading} overlayBlur={2} />
 		)}
 		{!loading && (
 			<Container style={{ position: 'relative' }} size="xs" px="xs" py="xl">

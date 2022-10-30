@@ -16,8 +16,36 @@ import {
 } from '@mantine/core';
 
 
-function VariantDrawer({ title, opened, setOpened, variants }) {
+function VariantDrawer({ title, opened, setOpened, variants, onSelect }) {
 
+	//formats price from cents to dollars
+	function formatPrice(price) {
+
+		if (price === 0) {
+			return '$0.00'
+		}
+		if(!price) {
+			return null
+		}
+
+		price = price.toString()
+
+		if (price.length > 2) {
+			let dollars = price.slice(0, -2)
+			let cents = price.slice(-2, price.length)
+
+			return '$' + dollars + '.' + cents
+		}
+		if (price.length === 2) {
+			return '$0.' + price
+		}
+		if (price.length === 1) {
+			return '$0.0' + price
+		}
+		
+		return null
+
+	}
 
 	return (
 		<MantineProvider
@@ -28,7 +56,7 @@ function VariantDrawer({ title, opened, setOpened, variants }) {
 						styles: (theme) => ({
 							drawer: {
 								maxWidth:
-									'800px',
+									'568px',
 								margin:
 									'auto',
 								borderRadius:
@@ -50,19 +78,25 @@ function VariantDrawer({ title, opened, setOpened, variants }) {
 						styles: (theme) => ({
 							root: {
 								border: 
-									`1px solid `+theme.colors.gray[3],
+									`1px solid `+theme.colors.gray[6],
 								borderRadius:
 									'4px',
 								padding:
 									'16px 0',
-
-							}
+								'&:hover': {
+									backgroundColor: theme.fn.darken('#fff', 0.05),
+								},
+								'&:active': {
+									backgroundColor: theme.fn.darken('#fff', 0.15),
+								},
+							},
 						})
 					}
 				},
 			}}
 		>
 			<Drawer
+				size="xl"
 				position='bottom'
 				opened={opened}
 				onClose={() => setOpened(false)}
@@ -74,16 +108,24 @@ function VariantDrawer({ title, opened, setOpened, variants }) {
 			>
 				<Container>
 					<Text mt='sm' weight={500}>Choose your option</Text>
-					<Container>
-						<Stack mt='lg'>
+					<Container py='lg'>
+						<Stack>
 							{variants.map((variant, index) => (
-								<Button
-									variant="outline"
+								<UnstyledButton
+									key={variant.variant_id}
+									onClick={(id, name, price, duration) => onSelect(variant.service_id, variant.name, variant.price, variant.duration_mins)}
 								>
 									<Container>
-										{variant.name}
+										<Group position="apart">
+											<Text>
+												{variant.name}
+											</Text>
+											<Text>
+												{formatPrice(variant.price)}
+											</Text>
+										</Group>
 									</Container>
-								</Button>
+								</UnstyledButton>
 							))}
 						</Stack>
 					</Container>
