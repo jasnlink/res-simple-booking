@@ -29,6 +29,7 @@ function AppCore() {
 				<Routes>
 					<Route exact path="/" element={ 
 						<Entry
+						selectedServiceName={selectedServiceName}
 							setSelectedServiceId={selectedServiceId => setSelectedServiceId(selectedServiceId)}
 							setSelectedServiceName={selectedServiceName => setSelectedServiceName(selectedServiceName)}
 							setSelectedServicePrice={selectedServicePrice => setSelectedServicePrice(selectedServicePrice)}
