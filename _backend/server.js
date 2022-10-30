@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import mysql from 'mysql';
+import dayjs from 'dayjs';
 
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
@@ -20,29 +21,29 @@ const AWS_REGION='ca-central-1';
 
 // create reusable transporter object using the default SMTP transport
 let transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: 25,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER, // generated ethereal user
-      pass: process.env.SMTP_PASSWORD, // generated ethereal password
-    },
+	host: process.env.SMTP_HOST,
+	port: 25,
+	secure: false, // true for 465, false for other ports
+	auth: {
+		user: process.env.SMTP_USER, // generated ethereal user
+		pass: process.env.SMTP_PASSWORD, // generated ethereal password
+	},
 });
 
 // async..await is not allowed in global scope, must use a wrapper
 async function sendOtpMail(otp, user) {
 
-  // send mail with defined transport object
-  let info = await transporter.sendMail({
-    from: '"Restaurant 2K Fusion" <noreply@2kfusion.com>', // sender address
-    to: user, // list of receivers
-    subject: "Votre code de vérification", // Subject line
-    text: "Votre code de vérification est: "+otp, // plain text body
-    html: "Votre code de vérification est: <b>"+otp+"</b><br /><br />", // html body
-  });
+	// send mail with defined transport object
+	let info = await transporter.sendMail({
+	from: '"Restaurant 2K Fusion" <noreply@2kfusion.com>', // sender address
+	to: user, // list of receivers
+	subject: "Votre code de vérification", // Subject line
+	text: "Votre code de vérification est: "+otp, // plain text body
+	html: "Votre code de vérification est: <b>"+otp+"</b><br /><br />", // html body
+	});
 
-  console.log("sending otp mail... %s", info.messageId);
-  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+	console.log("sending otp mail... %s", info.messageId);
+	// Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
 }
 
@@ -63,49 +64,50 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json({extended: true}));
 
 app.listen(PORT, () => {
-    console.log(`server is running on port ${PORT}.`)
+	console.log(`server is running on port ${PORT}.`)
 });
 
 
 //database connection info
 var connection;
 const connectionInfo = {
-    host: process.env.DB_HOST, 
-    user: process.env.DB_USER, 
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+	host: process.env.DB_HOST, 
+	user: process.env.DB_USER, 
+	password: process.env.DB_PASSWORD,
+	database: process.env.DB_NAME,
+	dateStrings: true
 };
 
 //auto connect and reconnect to database function
 function connectToDb(callback) {
-  const attemptConnection = () => {
-    console.log('connecting to database...')
-    connectionInfo.connectTimeout = 2000 // same as setTimeout to avoid server overload 
-    connection = mysql.createConnection(connectionInfo)
-    connection.connect(function (err) {
-      if (err) {
-        console.log('error connecting to database, trying again in 2 secs...')
-        connection.destroy() // end immediately failed connection before creating new one
-        setTimeout(attemptConnection, 2000)
-      } else {
-        callback()
-      }
-    })
-    connection.on('error', function(err) {
-        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            console.log('renewing database connection...');
-        } else {
-            console.log('database error...', err);
-        }
-        attemptConnection();
-    });
+	const attemptConnection = () => {
+	console.log('connecting to database...')
+	connectionInfo.connectTimeout = 2000 // same as setTimeout to avoid server overload 
+	connection = mysql.createConnection(connectionInfo)
+	connection.connect(function (err) {
+		if (err) {
+		console.log('error connecting to database, trying again in 2 secs...')
+		connection.destroy() // end immediately failed connection before creating new one
+		setTimeout(attemptConnection, 2000)
+		} else {
+		callback()
+		}
+	})
+	connection.on('error', function(err) {
+		if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+			console.log('renewing database connection...');
+		} else {
+			console.log('database error...', err);
+		}
+		attemptConnection();
+	});
 
-  }
-  attemptConnection()
+	}
+	attemptConnection()
 }
 // now you simply call it with normal callback
 connectToDb( () => {
-    console.log("Connected to database!");
+	console.log("Connected to database!");
 })
 
 
@@ -193,6 +195,7 @@ app.post('/api/list/limit/date/bookings', (req, res) => {
 			res.status(500).send(err);
 			return false;
 		}
+
 		res.send(result)
 	});
 
@@ -215,7 +218,6 @@ app.post('/api/create/booking', (req, res) => {
 	const customerPhone = req.body.customerPhone;
 
 	console.log('new booking request...')
-
 
 	// insert customer info into database
 	const insertCustomerRequest = "INSERT INTO res_customers (first_name, last_name, phone, email) VALUES (?,?,?,?);"
@@ -244,4 +246,23 @@ app.post('/api/create/booking', (req, res) => {
 
 		});
 	});
+});
+
+
+app.post('/api/admin/list/today/bookings', (req, res) => {
+
+	const limitDate = req.body.limitDate;
+
+	console.log('fetching all bookings by date...', limitDate)
+	// fetch categories
+	const fetchServiceRequest = "SELECT * FROM res_bookings WHERE deleted=0 AND reserved_date=?"
+	connection.query(fetchServiceRequest, [limitDate], (err, result) => {
+		if(err) {
+			console.log('error...', err);
+			res.status(500).send(err);
+			return false;
+		}
+		res.send(result)
+	});
+
 });

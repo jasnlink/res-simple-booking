@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration'
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import utc from 'dayjs/plugin/utc';
 import Axios from 'axios';
 
 import { 
@@ -25,12 +26,13 @@ import { Calendar } from '@mantine/dates';
 
 function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 
+	dayjs.extend(utc)
 	dayjs.extend(duration)
 	dayjs.extend(customParseFormat)
 	let navigate = useNavigate();
 
 	const [loading, setLoading] = useState(true)
-	const [timeslotLoading, setTimeslotLoading] = useState(true)
+	const [timeslotLoading, setTimeslotLoading] = useState(false)
 
 	const [currentDateTime, setCurrentDateTime] = useState(dayjs());
 	const [timegroupData, setTimegroupData] = useState([]);
@@ -38,6 +40,7 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 	const [calendarValue, setCalendarValue] = useState(null);
 	const [closedBusinessDays, setClosedBusinessDays] = useState(null);
 	const [displayDate, setDisplayDate] = useState('')
+	const [displayMessage, setDisplayMessage] = useState('');
 	const [timeslotData, setTimeslotData] = useState([])
 
 	// handles determining which days are closed from the received timegroup data
@@ -90,6 +93,25 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 
 	function handleAction(input) {
 
+		function convertToLocalTime(data) {
+			return new Promise((resolve, reject) => {
+				if(!data.length) {
+					resolve([])
+				}
+				for(let i = 0; i < data.length; i++) {
+					let row = data[i]
+					let dayjsRowDateTime = dayjs.utc(row.reserved_date+'-'+row.reserved_time, 'YYYY-MM-DD-HH:mm:ss')
+
+					row.reserved_date = dayjsRowDateTime.local().format('YYYY-MM-DD')
+					row.reserved_time = dayjsRowDateTime.local().format('HH:mm:ss')
+
+					if(i === data.length-1) {
+						resolve(data)
+					}
+				}
+			})
+		}
+
 		let parsedDate = dayjs(input).format('YYYY-MM-DD')
 		if(displayDate !== parsedDate) {
 
@@ -99,15 +121,25 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 				limitDate: parsedDate
 			})
 			.then((res) => {
-	
+
 				setCalendarValue(input)
 				setDisplayDate(parsedDate)
 	
-				buildTimeSlots(input, res.data)
-				.then((res) => {
-					setTimeslotData(res)
-					setTimeslotLoading(false)
+				convertToLocalTime(res.data)
+				.then((localBookedTimes) => {
+
+					buildTimeSlots(input, localBookedTimes)
+					.then((timeslots) => {
+						if(!timeslots.length) {
+							setDisplayMessage('Fully Booked')
+						} else {
+							setDisplayMessage('')
+						}
+						setTimeslotData(timeslots)
+						setTimeslotLoading(false)
+					})
 				})
+
 			})
 			.catch((err) => {
 				console.error(err)
@@ -217,6 +249,7 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 	function handleSelect(sTimeslot) {
 		setSelectedDate(displayDate)
 		setSelectedTime(sTimeslot)
+
 		navigate('/process');
 	}
 
@@ -252,16 +285,23 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 					</Card>
 				</Center>
 				<Title size="h4" align="center" mt="xl">{displayDate}</Title>
-				<Container style={{ position: 'relative' }}>
+				<Container style={{ position: 'relative', minHeight: '200px' }}>
 					<LoadingOverlay visible={timeslotLoading} overlayBlur={2} />
 					<Grid mt="md" gutter="xl">
-						{timeslotData.map((timeslot, index) => (
-							<Grid.Col key={index} span={6}>
-								<Button size="md" variant="default" fullWidth onClick={() => handleSelect(timeslot)}>
-									{timeslot}
-								</Button>
-							</Grid.Col>
-						))}
+						{!!timeslotData.length && (
+							<>
+								{timeslotData.map((timeslot, index) => (
+									<Grid.Col key={index} span={6}>
+										<Button size="md" variant="default" fullWidth onClick={() => handleSelect(timeslot)}>
+											{timeslot}
+										</Button>
+									</Grid.Col>
+								))}
+							</>
+						)}
+						{!timeslotData.length && (
+							<Title size="h2" align="center" mt="xl">{displayMessage}</Title>
+						)}
 					</Grid>
 				</Container>
 			</Container>

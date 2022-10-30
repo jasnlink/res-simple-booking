@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import { Link, useNavigate } from "react-router-dom";
 import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
+import duration from 'dayjs/plugin/duration';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import utc from 'dayjs/plugin/utc';
 import * as Yup from 'yup';
 import InputMask from 'react-input-mask';
 
@@ -42,6 +43,9 @@ function Process({
 	setCustomerEmail,
 	setCustomerPhone
 }) {
+
+	dayjs.extend(utc)
+	dayjs.extend(customParseFormat)
 
 	let navigate = useNavigate();
 	const [loading, setLoading] = useState(false)
@@ -130,11 +134,16 @@ function Process({
 		setCustomerEmail(inputEmail)
 		setCustomerPhone(inputPhone)
 
+		let bookingFormattedFullDateTime = dayjs(selectedDate+'-'+selectedTime, 'YYYY-MM-DD-HH:mm')
+
+		let utcBookingDate = bookingFormattedFullDateTime.utc().format('YYYY-MM-DD')
+		let utcBookingTime = bookingFormattedFullDateTime.utc().format('HH:mm')
+
 		Axios.post(process.env.REACT_APP_BACKEND_ROUTE+"/api/create/booking", {
 			variantId: selectedServiceVariantId,
 			serviceId: selectedServiceId,
-			bookingDate: selectedDate,
-			bookingTime: selectedTime,
+			bookingDate: utcBookingDate,
+			bookingTime: utcBookingTime,
 			customerFirstName: inputFirstName,
 			customerLastName: inputLastName,
 			customerEmail: inputEmail,
