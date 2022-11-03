@@ -130,8 +130,8 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 
 					buildTimeSlots(input, localBookedTimes)
 					.then((timeslots) => {
-						if(!timeslots.length) {
-							setDisplayMessage('Fully Booked')
+						if(timeslots.closedMessage) {
+							setDisplayMessage(timeslots.closedMessage)
 						} else {
 							setDisplayMessage('')
 						}
@@ -194,8 +194,16 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 		if(dayjs(data).format('YYYY-MM-DD') === currentDateTime.format('YYYY-MM-DD')) {
 
 			let dayjsbusinessHoursOpen = dayjs(dayjs(data).format('YYYY-MM-DD')+'-'+businessHours.open, 'YYYY-MM-DD-HH:mm:ss')
+			let dayjsbusinessHoursClose = dayjs(dayjs(data).format('YYYY-MM-DD')+'-'+businessHours.close, 'YYYY-MM-DD-HH:mm:ss')
 
-			if(currentDateTime.diff(dayjsbusinessHoursOpen) >= 0) {
+			console.log('currentDateTime.diff(dayjsbusinessHoursOpen)',currentDateTime.diff(dayjsbusinessHoursOpen))
+			console.log('currentDateTime.diff(dayjsbusinessHoursClose)',currentDateTime.diff(dayjsbusinessHoursClose))
+
+			if(currentDateTime.diff(dayjsbusinessHoursClose) >= 0) {
+				res = {
+					closedMessage: 'Closed for today'
+				}
+			} else if(currentDateTime.diff(dayjsbusinessHoursOpen) >= 0) {
 				let currentRoundedTime = roundToNextInterval(30)
 				res = await initTimeslots(currentRoundedTime, businessHours.close, 30, excludeData)
 			} else {
@@ -207,6 +215,11 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 			res = await initTimeslots(businessHours.open, businessHours.close, 30, excludeData)
 		}
 		
+		if(!res.length && !res.closedMessage) {
+			res = {
+				closedMessage: 'Fully Booked'
+			}
+		}
 		return res
 
 	}
