@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import mysql from 'mysql';
 import dayjs from 'dayjs';
+import AWS from 'aws-sdk';
 
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
@@ -18,6 +19,11 @@ let AWS_SNS_ACCESS_KEY_ID = process.env.AWS_SNS_ACCESS_KEY_ID;
 let AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 const AWS_REGION='ca-central-1';
 
+AWS.config.update({
+	region: AWS_REGION,
+	accessKeyId: AWS_SNS_ACCESS_KEY_ID,
+  	secretAccessKey: AWS_SECRET_ACCESS_KEY,
+});
 
 // create reusable transporter object using the default SMTP transport
 let transporter = nodemailer.createTransport({
@@ -47,8 +53,6 @@ async function sendOtpMail(otp, user) {
 
 }
 
-
-
 // set website address
 const SITE = 'https://staging.2kfusion.com';
 // set port, listen for requests
@@ -77,6 +81,9 @@ const connectionInfo = {
 	database: process.env.DB_NAME,
 	dateStrings: true
 };
+
+// this contains all the business configuration and settings
+let businessConfig
 
 //auto connect and reconnect to database function
 function connectToDb(callback) {
@@ -108,6 +115,62 @@ function connectToDb(callback) {
 // now you simply call it with normal callback
 connectToDb( () => {
 	console.log("Connected to database!");
+
+	console.log("Fetching settings from database...")
+	const fetchSettingsRequest = "SELECT * FROM res_settings"
+	connection.query(fetchSettingsRequest, (err, result) => {
+		if(err) {
+			console.log('error...', err);
+			return false;
+		}
+
+		businessConfig = result[0]
+
+	})
+})
+
+function sendSms(message) {
+
+	console.log('sending SMS via AWS SNS...')
+
+	// Create publish parameters
+	var awsParams = {
+	 	Message: message, /* required */
+	 	PhoneNumber: businessConfig.business_phone,
+	};
+
+	// Create promise and SNS service object
+	var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(awsParams).promise();
+
+	// Handle promise's fulfilled/rejected states
+	publishTextPromise.then(function(data) {
+		console.log("MessageID is " + data.MessageId);
+	}).catch(function(err) {
+		console.error(err, err.stack);
+	});
+
+}
+
+app.get('/api/sns', (req, res) => {
+
+	console.log(businessConfig)
+
+	// Create publish parameters
+	var awsParams = {
+	  Message: 'TEXT_MESSAGE', /* required */
+	  PhoneNumber: businessConfig.business_phone,
+	};
+
+	// Create promise and SNS service object
+	var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(awsParams).promise();
+
+	// Handle promise's fulfilled/rejected states
+	publishTextPromise.then(function(data) {
+		console.log("MessageID is " + data.MessageId);
+	}).catch(function(err) {
+		console.error(err, err.stack);
+	});
+
 })
 
 
@@ -242,7 +305,13 @@ app.post('/api/create/booking', (req, res) => {
 				return false;
 			}
 
-			res.send('ok');
+			console.log('sending SMS confirmation...')
+
+			let bookingMessage = ('New appointment:\n'+customerFirstName+' '+customerLastName+' has booked a new appointment on '+bookingDate+' '+bookingTime)
+			sendSms(bookingMessage)
+
+			res.send('ok')
+
 
 		});
 	});
