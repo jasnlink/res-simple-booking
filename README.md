@@ -27,15 +27,17 @@ RES Simple Booking aims to simplify appointment scheduling and enhance communica
 - Implementing text message notifications for new bookings.
 - Efficiently managing timeslots and calendar integration.
 
-<p float="left">
-  <img src="https://msmtech.ca/wp-content/uploads/2023/04/3.png" width="25%" />
-  <img src="https://msmtech.ca/wp-content/uploads/2023/04/4.png" width="25%" />
-</p>
+
 
 <p float="left">
-  <img src="https://msmtech.ca/wp-content/uploads/2023/04/5.png" width="25%" />
-  <img src="https://msmtech.ca/wp-content/uploads/2023/04/6.png" width="25%" />
+  <img src="https://msmtech.ca/wp-content/uploads/2023/04/3.png" width="30%" />
+  <img src="https://msmtech.ca/wp-content/uploads/2023/04/4.png" width="30%" />
+  <img src="https://msmtech.ca/wp-content/uploads/2023/04/5.png" width="30%" />
 </p>
+
+![Image 6](https://msmtech.ca/wp-content/uploads/2023/04/6.png)
+
+
 
 ## Technologies used
 
