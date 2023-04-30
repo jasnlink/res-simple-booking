@@ -1,6 +1,9 @@
 # RES Simple Booking - Online Appointment Software - 2023
 
-![Image 1](https://msmtech.ca/wp-content/uploads/2023/04/1.png) ![Image 2](https://msmtech.ca/wp-content/uploads/2023/04/2.png)
+<p float="left">
+  <img src="https://msmtech.ca/wp-content/uploads/2023/04/1.png" width="25%" />
+  <img src="https://msmtech.ca/wp-content/uploads/2023/04/2.png" width="25%" />
+</p>
 
 ## Features
 
@@ -24,8 +27,15 @@ RES Simple Booking aims to simplify appointment scheduling and enhance communica
 - Implementing text message notifications for new bookings.
 - Efficiently managing timeslots and calendar integration.
 
-![Image 3](https://msmtech.ca/wp-content/uploads/2023/04/3.png) ![Image 4](https://msmtech.ca/wp-content/uploads/2023/04/4.png)
-![Image 5](https://msmtech.ca/wp-content/uploads/2023/04/5.png) ![Image 6](https://msmtech.ca/wp-content/uploads/2023/04/6.png)
+<p float="left">
+  <img src="https://msmtech.ca/wp-content/uploads/2023/04/3.png" width="25%" />
+  <img src="https://msmtech.ca/wp-content/uploads/2023/04/4.png" width="25%" />
+</p>
+
+<p float="left">
+  <img src="https://msmtech.ca/wp-content/uploads/2023/04/5.png" width="25%" />
+  <img src="https://msmtech.ca/wp-content/uploads/2023/04/6.png" width="25%" />
+</p>
 
 ## Technologies used
 
