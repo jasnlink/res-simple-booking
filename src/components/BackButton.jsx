@@ -1,9 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { IconArrowNarrowLeft } from '@tabler/icons';
 
 import { 
 	ActionIcon
- } from '@mantine/core';
+} from '@mantine/core';
 
 function BackButton(navigateTo) {
 	let navigate = useNavigate();
@@ -14,4 +14,4 @@ function BackButton(navigateTo) {
 	</div>
 }
 
-export default BackButton
+export default BackButton;

@@ -1,51 +1,20 @@
 import React from 'react';
-import { 
-	Button,
+import {
 	Title,
 	Container,
 	Stack,
-	Card,
 	Text,
 	Group,
-	Paper,
-	LoadingOverlay,
 	Drawer,
 	MantineProvider,
-	Divider, 
 	UnstyledButton
 } from '@mantine/core';
+import useFormatPrice from '../hooks/useFormatPrice';
 
 
 function VariantDrawer({ title, opened, setOpened, variants, onSelect }) {
 
-	//formats price from cents to dollars
-	function formatPrice(price) {
-
-		if (price === 0) {
-			return '$0.00'
-		}
-		if(!price) {
-			return null
-		}
-
-		price = price.toString()
-
-		if (price.length > 2) {
-			let dollars = price.slice(0, -2)
-			let cents = price.slice(-2, price.length)
-
-			return '$' + dollars + '.' + cents
-		}
-		if (price.length === 2) {
-			return '$0.' + price
-		}
-		if (price.length === 1) {
-			return '$0.0' + price
-		}
-		
-		return null
-
-	}
+	let formatPrice = useFormatPrice();
 
 	return (
 		<MantineProvider
@@ -63,12 +32,12 @@ function VariantDrawer({ title, opened, setOpened, variants, onSelect }) {
 									'4px',
 								overflow:
 									'auto',
-									background: 'white'
+								background: 'white'
 							},
 							header: {
 								position: 'sticky',
 								top: '0',
-								borderBottom: `1px solid `+theme.colors.gray[3],
+								borderBottom: `1px solid ` + theme.colors.gray[3],
 								background: 'white',
 								padding: '1rem 1rem'
 							}
@@ -77,8 +46,8 @@ function VariantDrawer({ title, opened, setOpened, variants, onSelect }) {
 					UnstyledButton: {
 						styles: (theme) => ({
 							root: {
-								border: 
-									`1px solid `+theme.colors.gray[6],
+								border:
+									`1px solid ` + theme.colors.gray[6],
 								borderRadius:
 									'4px',
 								padding:
@@ -101,10 +70,10 @@ function VariantDrawer({ title, opened, setOpened, variants, onSelect }) {
 				opened={opened}
 				onClose={() => setOpened(false)}
 				title={(
-						<>
-							<Title size="h3">{title}</Title>
-						</>
-					)}
+					<>
+						<Title size="h3">{title}</Title>
+					</>
+				)}
 			>
 				<Container>
 					<Text mt='sm' weight={500}>Choose your option</Text>

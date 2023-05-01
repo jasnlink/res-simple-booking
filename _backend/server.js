@@ -15,14 +15,14 @@ process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 //set time zone
 process.env.TZ = 'America/Toronto';
 
-let AWS_SNS_ACCESS_KEY_ID = process.env.AWS_SNS_ACCESS_KEY_ID; 
+let AWS_SNS_ACCESS_KEY_ID = process.env.AWS_SNS_ACCESS_KEY_ID;
 let AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
-const AWS_REGION='ca-central-1';
+const AWS_REGION = 'ca-central-1';
 
 AWS.config.update({
 	region: AWS_REGION,
 	accessKeyId: AWS_SNS_ACCESS_KEY_ID,
-  	secretAccessKey: AWS_SECRET_ACCESS_KEY,
+	secretAccessKey: AWS_SECRET_ACCESS_KEY,
 });
 
 // create reusable transporter object using the default SMTP transport
@@ -41,11 +41,11 @@ async function sendOtpMail(otp, user) {
 
 	// send mail with defined transport object
 	let info = await transporter.sendMail({
-	from: '"Restaurant 2K Fusion" <noreply@2kfusion.com>', // sender address
-	to: user, // list of receivers
-	subject: "Votre code de vérification", // Subject line
-	text: "Votre code de vérification est: "+otp, // plain text body
-	html: "Votre code de vérification est: <b>"+otp+"</b><br /><br />", // html body
+		from: '"Sender" <noreply@example.com>', // sender address
+		to: user, // list of receivers
+		subject: "Votre code de vérification", // Subject line
+		text: "Votre code de vérification est: " + otp, // plain text body
+		html: "Votre code de vérification est: <b>" + otp + "</b><br /><br />", // html body
 	});
 
 	console.log("sending otp mail... %s", info.messageId);
@@ -53,8 +53,6 @@ async function sendOtpMail(otp, user) {
 
 }
 
-// set website address
-const SITE = 'https://staging.2kfusion.com';
 // set port, listen for requests
 const PORT = process.env.PORT || 3500;
 
@@ -64,88 +62,88 @@ app.use(cors({
 	origin: '*',
 	methods: ['GET', 'POST'],
 }));
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ extended: true }));
 
 app.listen(PORT, () => {
-	console.log(`server is running on port ${PORT}.`)
+	console.log(`server is running on port ${PORT}.`);
 });
 
 
 //database connection info
 var connection;
 const connectionInfo = {
-	host: process.env.DB_HOST, 
-	user: process.env.DB_USER, 
+	host: process.env.DB_HOST,
+	user: process.env.DB_USER,
 	password: process.env.DB_PASSWORD,
 	database: process.env.DB_NAME,
 	dateStrings: true
 };
 
 // this contains all the business configuration and settings
-let businessConfig
+let businessConfig;
 
 //auto connect and reconnect to database function
 function connectToDb(callback) {
 	const attemptConnection = () => {
-	console.log('connecting to database...')
-	connectionInfo.connectTimeout = 2000 // same as setTimeout to avoid server overload 
-	connection = mysql.createConnection(connectionInfo)
-	connection.connect(function (err) {
-		if (err) {
-		console.log('error connecting to database, trying again in 2 secs...')
-		connection.destroy() // end immediately failed connection before creating new one
-		setTimeout(attemptConnection, 2000)
-		} else {
-		callback()
-		}
-	})
-	connection.on('error', function(err) {
-		if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-			console.log('renewing database connection...');
-		} else {
-			console.log('database error...', err);
-		}
-		attemptConnection();
-	});
+		console.log('connecting to database...');
+		connectionInfo.connectTimeout = 2000; // same as setTimeout to avoid server overload 
+		connection = mysql.createConnection(connectionInfo);
+		connection.connect(function (err) {
+			if (err) {
+				console.log('error connecting to database, trying again in 2 secs...');
+				connection.destroy(); // end immediately failed connection before creating new one
+				setTimeout(attemptConnection, 2000);
+			} else {
+				callback();
+			}
+		});
+		connection.on('error', function (err) {
+			if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+				console.log('renewing database connection...');
+			} else {
+				console.log('database error...', err);
+			}
+			attemptConnection();
+		});
 
-	}
-	attemptConnection()
+	};
+	attemptConnection();
 }
 // now you simply call it with normal callback
-connectToDb( () => {
+connectToDb(() => {
 	console.log("Connected to database!");
 
-	console.log("Fetching settings from database...")
-	const fetchSettingsRequest = "SELECT * FROM res_settings"
+	console.log("Fetching settings from database...");
+	const fetchSettingsRequest = "SELECT * FROM res_settings";
 	connection.query(fetchSettingsRequest, (err, result) => {
-		if(err) {
+		if (err) {
 			console.log('error...', err);
 			return false;
 		}
 
-		businessConfig = result[0]
+		businessConfig = result[0];
 
-	})
-})
+	});
+});
 
 function sendSms(message) {
 
-	console.log('sending SMS via AWS SNS...')
+	console.log('sending SMS via AWS SNS...');
 
 	// Create publish parameters
 	var awsParams = {
-	 	Message: message, /* required */
-	 	PhoneNumber: businessConfig.business_phone,
+		Message: message, /* required */
+		PhoneNumber: businessConfig.business_phone,
 	};
 
 	// Create promise and SNS service object
-	var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(awsParams).promise();
+	var publishTextPromise = new AWS.SNS({ apiVersion: '2010-03-31' }).publish(awsParams).promise();
 
 	// Handle promise's fulfilled/rejected states
-	publishTextPromise.then(function(data) {
+	publishTextPromise.then(function (data) {
 		console.log("MessageID is " + data.MessageId);
-	}).catch(function(err) {
+	}).catch(function (err) {
 		console.error(err, err.stack);
 	});
 
@@ -153,94 +151,94 @@ function sendSms(message) {
 
 app.get('/api/sns', (req, res) => {
 
-	console.log(businessConfig)
+	console.log(businessConfig);
 
 	// Create publish parameters
 	var awsParams = {
-	  Message: 'TEXT_MESSAGE', /* required */
-	  PhoneNumber: businessConfig.business_phone,
+		Message: 'TEXT_MESSAGE', /* required */
+		PhoneNumber: businessConfig.business_phone,
 	};
 
 	// Create promise and SNS service object
-	var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(awsParams).promise();
+	var publishTextPromise = new AWS.SNS({ apiVersion: '2010-03-31' }).publish(awsParams).promise();
 
 	// Handle promise's fulfilled/rejected states
-	publishTextPromise.then(function(data) {
+	publishTextPromise.then(function (data) {
 		console.log("MessageID is " + data.MessageId);
-	}).catch(function(err) {
+	}).catch(function (err) {
 		console.error(err, err.stack);
 	});
 
-})
+});
 
 
 app.get('/api/list/categories', (req, res) => {
 
-	console.log('fetching all categories...')
+	console.log('fetching all categories...');
 
 	// fetch categories
-	const fetchCategoryRequest = "SELECT * FROM res_categories WHERE deleted=0"
+	const fetchCategoryRequest = "SELECT * FROM res_categories WHERE deleted=0";
 	connection.query(fetchCategoryRequest, (err, result) => {
-		if(err) {
+		if (err) {
 			console.log('error...', err);
 			res.status(500).send(err);
 			return false;
 		}
-		res.send(result)
+		res.send(result);
 	});
 
 });
 
 app.get('/api/list/services', (req, res) => {
 
-	console.log('fetching all services...')
+	console.log('fetching all services...');
 
 	// fetch categories
-	const fetchServiceRequest = "SELECT * FROM res_services WHERE deleted=0"
+	const fetchServiceRequest = "SELECT * FROM res_services WHERE deleted=0";
 	connection.query(fetchServiceRequest, (err, result) => {
-		if(err) {
+		if (err) {
 			console.log('error...', err);
 			res.status(500).send(err);
 			return false;
 		}
 
-		let serviceList = result
+		let serviceList = result;
 
-		const fetchVariantRequest = "SELECT * FROM res_services_variants WHERE deleted=0"
+		const fetchVariantRequest = "SELECT * FROM res_services_variants WHERE deleted=0";
 		connection.query(fetchVariantRequest, (err, result) => {
-			if(err) {
+			if (err) {
 				console.log('error', err);
 				res.status(500).send(err);
 				return false;
 			}
-			for(let serviceRow of serviceList) {
-				let variants = []
-				for(let variantRow of result) {
-					if(variantRow.service_id === serviceRow.service_id) {
-						variants.push(variantRow)
+			for (let serviceRow of serviceList) {
+				let variants = [];
+				for (let variantRow of result) {
+					if (variantRow.service_id === serviceRow.service_id) {
+						variants.push(variantRow);
 					}
 				}
-				serviceRow.variants = variants
+				serviceRow.variants = variants;
 			}
-			res.send(serviceList)
-		})
+			res.send(serviceList);
+		});
 	});
 
 });
 
 app.post('/api/list/timegroups', (req, res) => {
 
-	console.log('fetching all timegroups...')
+	console.log('fetching all timegroups...');
 
 	// fetch categories
-	const fetchTimegroupRequest = "SELECT * FROM res_timegroups"
+	const fetchTimegroupRequest = "SELECT * FROM res_timegroups";
 	connection.query(fetchTimegroupRequest, (err, result) => {
-		if(err) {
+		if (err) {
 			console.log('error...', err);
 			res.status(500).send(err);
 			return false;
 		}
-		res.send(result)
+		res.send(result);
 	});
 
 });
@@ -249,27 +247,27 @@ app.post('/api/list/limit/date/bookings', (req, res) => {
 
 	const limitDate = req.body.limitDate;
 
-	console.log('fetching all bookings by date...', limitDate)
+	console.log('fetching all bookings by date...', limitDate);
 	// fetch categories
-	const fetchServiceRequest = "SELECT * FROM res_bookings WHERE deleted=0 AND reserved_date=?"
+	const fetchServiceRequest = "SELECT * FROM res_bookings WHERE deleted=0 AND reserved_date=?";
 	connection.query(fetchServiceRequest, [limitDate], (err, result) => {
-		if(err) {
+		if (err) {
 			console.log('error...', err);
 			res.status(500).send(err);
 			return false;
 		}
 
-		res.send(result)
+		res.send(result);
 	});
 
 });
 
 app.post('/api/create/booking', (req, res) => {
 
-	let variantId = 0
+	let variantId = 0;
 
-	if(req.body.variantId) {
-		variantId = req.body.variantId
+	if (req.body.variantId) {
+		variantId = req.body.variantId;
 	}
 
 	const serviceId = req.body.serviceId;
@@ -280,13 +278,13 @@ app.post('/api/create/booking', (req, res) => {
 	const customerEmail = req.body.customerEmail;
 	const customerPhone = req.body.customerPhone;
 
-	console.log('new booking request...')
+	console.log('new booking request...');
 
 	// insert customer info into database
-	const insertCustomerRequest = "INSERT INTO res_customers (first_name, last_name, phone, email) VALUES (?,?,?,?);"
+	const insertCustomerRequest = "INSERT INTO res_customers (first_name, last_name, phone, email) VALUES (?,?,?,?);";
 	connection.query(insertCustomerRequest, [customerFirstName, customerLastName, customerEmail, customerPhone], (err, result) => {
-		console.log('insert new customer...', customerEmail)
-		if(err) {
+		console.log('insert new customer...', customerEmail);
+		if (err) {
 			console.log('error...', err);
 			res.status(500).send(err);
 			return false;
@@ -296,21 +294,21 @@ app.post('/api/create/booking', (req, res) => {
 		let customerId = result.insertId;
 
 		// insert new booking
-		const insertBookingRequest = "INSERT INTO res_bookings (reserved_date, reserved_time, customer_id, service_id, variant_id) VALUES (?,?,?,?,?);"
+		const insertBookingRequest = "INSERT INTO res_bookings (reserved_date, reserved_time, customer_id, service_id, variant_id) VALUES (?,?,?,?,?);";
 		connection.query(insertBookingRequest, [bookingDate, bookingTime, customerId, serviceId, variantId], (err, result) => {
-			console.log('insert new booking...', bookingDate, bookingTime)
-			if(err) {
+			console.log('insert new booking...', bookingDate, bookingTime);
+			if (err) {
 				console.log('error...', err);
 				res.status(500).send(err);
 				return false;
 			}
 
-			console.log('sending SMS confirmation...')
+			console.log('sending SMS confirmation...');
 
-			let bookingMessage = ('New appointment:\n'+customerFirstName+' '+customerLastName+' has booked a new appointment on '+bookingDate+' '+bookingTime)
-			sendSms(bookingMessage)
+			let bookingMessage = ('New appointment:\n' + customerFirstName + ' ' + customerLastName + ' has booked a new appointment on ' + bookingDate + ' ' + bookingTime);
+			sendSms(bookingMessage);
 
-			res.send('ok')
+			res.send('ok');
 
 
 		});
@@ -322,16 +320,16 @@ app.post('/api/admin/list/today/bookings', (req, res) => {
 
 	const limitDate = req.body.limitDate;
 
-	console.log('fetching all bookings by date...', limitDate)
+	console.log('fetching all bookings by date...', limitDate);
 	// fetch categories
-	const fetchServiceRequest = "SELECT * FROM res_bookings WHERE deleted=0 AND reserved_date=?"
+	const fetchServiceRequest = "SELECT * FROM res_bookings WHERE deleted=0 AND reserved_date=?";
 	connection.query(fetchServiceRequest, [limitDate], (err, result) => {
-		if(err) {
+		if (err) {
 			console.log('error...', err);
 			res.status(500).send(err);
 			return false;
 		}
-		res.send(result)
+		res.send(result);
 	});
 
 });
