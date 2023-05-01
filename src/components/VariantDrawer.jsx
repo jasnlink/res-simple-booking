@@ -9,12 +9,10 @@ import {
 	MantineProvider,
 	UnstyledButton
 } from '@mantine/core';
-import useFormatPrice from '../hooks/useFormatPrice';
+import formatPrice from '../utils/utils'
 
 
 function VariantDrawer({ title, opened, setOpened, variants, onSelect }) {
-
-	let formatPrice = useFormatPrice();
 
 	return (
 		<MantineProvider

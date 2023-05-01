@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import Axios from 'axios';
-import useFormatPrice from './hooks/useFormatPrice';
+import formatPrice from './utils/utils'
 
 import {
 	Button,
@@ -58,7 +58,6 @@ function Entry({
 
 	}, []);
 
-	let formatPrice = useFormatPrice();
 	let navigate = useNavigate();
 
 	function handleSelect(sId, sName, sPrice, sDuration, variantExist, variants = []) {

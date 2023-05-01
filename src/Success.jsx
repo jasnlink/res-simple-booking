@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import useFormatPrice from './hooks/useFormatPrice';
+import formatPrice from './utils/utils'
 
 import {
 	Title,
@@ -31,7 +31,6 @@ function Success({
 	customerPhone
 }) {
 
-	let formatPrice = useFormatPrice();
 	let navigate = useNavigate();
 	const [loading, setLoading] = useState(false);
 

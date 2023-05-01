@@ -124,19 +124,19 @@ function Booking({ selectedServiceId, setSelectedDate, setSelectedTime }) {
 				setDisplayDate(parsedDate);
 
 				convertToLocalTime(res.data)
-					.then((localBookedTimes) => {
+				.then((localBookedTimes) => {
 
-						buildTimeSlots(input, localBookedTimes)
-							.then((timeslots) => {
-								if (timeslots.closedMessage) {
-									setDisplayMessage(timeslots.closedMessage);
-								} else {
-									setDisplayMessage('');
-								}
-								setTimeslotData(timeslots);
-								setTimeslotLoading(false);
-							});
+					buildTimeSlots(input, localBookedTimes)
+					.then((timeslots) => {
+						if (timeslots.closedMessage) {
+							setDisplayMessage(timeslots.closedMessage);
+						} else {
+							setDisplayMessage('');
+						}
+						setTimeslotData(timeslots);
+						setTimeslotLoading(false);
 					});
+				});
 
 			})
 			.catch((err) => {

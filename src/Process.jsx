@@ -19,9 +19,7 @@ import {
 } from '@mantine/core';
 
 import { IconArrowNarrowLeft } from '@tabler/icons';
-import useFormatPrice from './hooks/useFormatPrice';
-
-
+import formatPrice from './utils/utils'
 
 function Process({
 	selectedServiceId,
@@ -42,8 +40,6 @@ function Process({
 
 	dayjs.extend(utc);
 	dayjs.extend(customParseFormat);
-
-	let formatPrice = useFormatPrice();
 
 	let navigate = useNavigate();
 	const [loading, setLoading] = useState(false);
