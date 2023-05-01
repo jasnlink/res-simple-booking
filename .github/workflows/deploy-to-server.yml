@@ -31,7 +31,7 @@ jobs:
           local_dir: "./build/"
           remote_dir: "/var/www/ginsengmassage-ca/app"
         run: |
-          npm install
+          npm ci
           echo "$dev_env_file" > .env
           chmod 600 .env
           unset CI
@@ -47,5 +47,5 @@ jobs:
           local_dir: "./"
           remote_dir: "/var/www/res-backend"
         run: |
-          npm install
+          npm ci
           rsync -azvr --delete ${local_dir} ${remote_user}@${remote_host}:${remote_dir}
