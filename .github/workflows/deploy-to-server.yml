@@ -27,7 +27,7 @@ jobs:
           remote_host: ${{ secrets.DEPLOY_HOST }}
           remote_port: ${{ secrets.DEPLOY_PORT }}
           remote_user: ${{ secrets.DEPLOY_USER }}
-          dev_env_file: ${{ secrets.DEV_ENV_FILE }}
+          dev_env_file: ${{ secrets.DEV_FRONTEND_ENV_FILE }}
           local_dir: "./build/"
           remote_dir: "/var/www/ginsengmassage-ca/app"
         run: |
@@ -43,9 +43,12 @@ jobs:
           remote_host: ${{ secrets.DEPLOY_HOST }}
           remote_port: ${{ secrets.DEPLOY_PORT }}
           remote_user: ${{ secrets.DEPLOY_USER }}
-          dev_env_file: ${{ secrets.DEV_ENV_FILE }}
+          dev_env_file: ${{ secrets.DEV_BACKEND_ENV_FILE }}
           local_dir: "./"
           remote_dir: "/var/www/res-backend"
         run: |
           npm ci
+          echo "$dev_env_file" > .env
+          chmod 600 .env
+          unset CI
           rsync -azvr --delete ${local_dir} ${remote_user}@${remote_host}:${remote_dir}
