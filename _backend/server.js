@@ -333,3 +333,22 @@ app.post('/api/admin/list/today/bookings', (req, res) => {
 	});
 
 });
+
+app.post('/api/onsite/email/signup', (req, res) => {
+	const name = req.body.name
+	const email = req.body.email
+
+	console.log('received email signup...', req.body)
+
+	const insertSignupRequest = "INSERT INTO gm_email_signups (name, email) VALUES (?,?);";
+	connection.query(insertSignupRequest, [name, email], (err, result) => {
+		console.log('insert new signup...', email);
+		if (err) {
+			console.log('error...', err);
+			res.status(500).send(err);
+			return false;
+		}
+
+		res.status(200).send();
+	});
+})
