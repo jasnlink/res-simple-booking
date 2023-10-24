@@ -1,17 +1,18 @@
+import dotenv from 'dotenv';
+//read .env file
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import mysql from 'mysql';
 import dayjs from 'dayjs';
 import AWS from 'aws-sdk';
+import * as cron from 'node-cron';
 
 import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-//read .env file
-dotenv.config();
 
+dotenv.config();
 // disable TLS for testing mail SMTP
-process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+// process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 //set time zone
 process.env.TZ = 'America/Toronto';
 
@@ -25,15 +26,17 @@ AWS.config.update({
 	secretAccessKey: AWS_SECRET_ACCESS_KEY,
 });
 
+console.log(`process.env.SMTP_HOST`, process.env.SMTP_HOST)
+
 // create reusable transporter object using the default SMTP transport
-let transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
 	host: process.env.SMTP_HOST,
-	port: 25,
-	secure: false, // true for 465, false for other ports
+	port: parseInt(process.env.SMTP_PORT || `465`, 10),
+	secure: true,
 	auth: {
-		user: process.env.SMTP_USER, // generated ethereal user
-		pass: process.env.SMTP_PASSWORD, // generated ethereal password
-	},
+		user: process.env.SMTP_USERNAME,
+		pass: process.env.SMTP_PASSWORD
+	}
 });
 
 // async..await is not allowed in global scope, must use a wrapper
@@ -110,22 +113,25 @@ function connectToDb(callback) {
 	};
 	attemptConnection();
 }
-// now you simply call it with normal callback
-connectToDb(() => {
-	console.log("Connected to database!");
-
-	console.log("Fetching settings from database...");
-	const fetchSettingsRequest = "SELECT * FROM res_settings";
-	connection.query(fetchSettingsRequest, (err, result) => {
-		if (err) {
-			console.log('error...', err);
-			return false;
-		}
-
-		businessConfig = result[0];
-
+console.log(`process.env.NODE_ENV`, process.env.NODE_ENV)
+if (process.env.NODE_ENV === 'production') {
+	// now you simply call it with normal callback
+	connectToDb(() => {
+		console.log("Connected to database!");
+	
+		console.log("Fetching settings from database...");
+		const fetchSettingsRequest = "SELECT * FROM res_settings";
+		connection.query(fetchSettingsRequest, (err, result) => {
+			if (err) {
+				console.log('error...', err);
+				return false;
+			}
+	
+			businessConfig = result[0];
+	
+		});
 	});
-});
+}
 
 function sendSms(message) {
 
@@ -134,7 +140,7 @@ function sendSms(message) {
 	// Create publish parameters
 	var awsParams = {
 		Message: message, /* required */
-		PhoneNumber: businessConfig.business_phone,
+		PhoneNumber: businessConfig.business_phone || ``,
 	};
 
 	// Create promise and SNS service object
@@ -156,7 +162,7 @@ app.get('/api/sns', (req, res) => {
 	// Create publish parameters
 	var awsParams = {
 		Message: 'TEXT_MESSAGE', /* required */
-		PhoneNumber: businessConfig.business_phone,
+		PhoneNumber: businessConfig.business_phone || ``,
 	};
 
 	// Create promise and SNS service object
@@ -180,7 +186,7 @@ app.get('/api/list/categories', (req, res) => {
 	const fetchCategoryRequest = "SELECT * FROM res_categories WHERE deleted=0";
 	connection.query(fetchCategoryRequest, (err, result) => {
 		if (err) {
-			console.log('error...', err);
+			console.log('db error...', err);
 			res.status(500).send(err);
 			return false;
 		}
@@ -334,14 +340,17 @@ app.post('/api/admin/list/today/bookings', (req, res) => {
 
 });
 
+/** ------------------------------------------------------------------------------------------------ */
+
 app.post('/api/onsite/email/signup', (req, res) => {
 	const name = req.body.name
+	const phone = req.body.phone
 	const email = req.body.email
 
 	console.log('received email signup...', req.body)
 
-	const insertSignupRequest = "INSERT INTO gm_email_signups (name, email) VALUES (?,?);";
-	connection.query(insertSignupRequest, [name, email], (err, result) => {
+	const insertSignupRequest = "INSERT INTO gm_email_signups (name, phone, email) VALUES (?,?,?);";
+	connection.query(insertSignupRequest, [name, phone, email], (err, result) => {
 		console.log('insert new signup...', email);
 		if (err) {
 			console.log('error...', err);
@@ -350,5 +359,115 @@ app.post('/api/onsite/email/signup', (req, res) => {
 		}
 
 		res.status(200).send();
+	});
+})
+
+cron.schedule('0 11 * * *', () => {
+	console.log(`checking email signups to send review mail...`)
+	const fetchEmailSignupRequest = "SELECT * FROM gm_email_signups WHERE reminded=0;"
+	connection.query(fetchEmailSignupRequest, (err, result) => {
+		let err
+		let result = [
+			{
+				email: `test@msmtech.ca`,
+				name: `John Test`,
+				phone: `1111111`,
+
+			}
+		]
+		if (err) {
+			console.error('fetchEmailSignupRequest error...', err);
+			return false;
+		}
+
+		if (result.length === 0) {
+			console.log(`No users need to be reminded...`)
+			return
+		}
+
+		console.log(`Found users that need to be reminded...`, result.length)
+		let emailQueue = []
+
+		for (let row of result) {
+			const subject = `Hello ${row.name}, please take a moment to review us on Google.`
+			const textContent = `Hello ${row.name}, \n We hope you enjoyed our service. Please take a moment to review us on Google. \n Leave a Review at https://search.google.com/local/writereview?placeid=ChIJjVNdMKQRyUwR7mgfSaIs4Ts`
+			const template = `
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>Review Reminder</title>
+			</head>
+			<body style="background-color: #442824; font-family: serif; color: #fff;">
+				<table width="100%" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+						<td align="center">
+							<table width="500" border="0" cellspacing="0" cellpadding="0" style="border-radius: 5px; border: 1px dotted #fff; background-color: #f4f1ea; background-image: url('https://ginsengmassage.ca/wp-content/uploads/2022/10/section-bg-2.jpg');">
+								<tr>
+									<td align="center" style="padding: 20px;">
+										<img src="https://ginsengmassage.ca/wp-content/uploads/2022/10/main-logo-lg.png" alt="Ginseng Massage Logo" width="250" style="display: block;">
+									</td>
+								</tr>
+								<tr>
+									<td align="center" style="padding: 20px;">
+										<h1 style="margin-top: 0px;margin-bottom: 32px;">Hello ${row.name},</h1>
+										<p style="margin: 20px 0;">We hope you enjoyed our service. Please take a moment to review us on Google.</p>
+										<a href="https://search.google.com/local/writereview?placeid=ChIJjVNdMKQRyUwR7mgfSaIs4Ts" style="margin-top: 32px; display: block; padding: 22px 42px; border: none; border-radius: 4px; background-color: #de8376; color: white; cursor: pointer; text-decoration: none; font-size: 20px;">Leave a Review</a>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</body>
+			</html>
+			`
+
+			console.log(`pushing new sendReviewEmail to: ${row.email}`)
+			emailQueue.push(sendReviewEmail(transporter, row.email, subject, template, textContent).catch(err => console.error(err)))
+		}
+
+		console.log(`reached end of results, awaiting email queue to resolve...`)
+		Promise.all(emailQueue)
+		.then(() => {
+			console.log(`all email queue jobs resolved, review email job done...`, new Date.now())
+		})
+		
+		function sendReviewEmail(transporter, to, subject, html, text) {
+			return new Promise((resolve, reject) => {
+
+				console.log(`running sendReviewEmail to: ${to}`)
+
+				// send mail with defined transport object
+				transporter.sendMail({
+					from: '"mailer" <admin@ginsengmassage.ca>', // sender address
+					to: to, // list of receivers
+					subject: subject, // Subject line
+					text: text, // plain text body
+					html: html, // html body
+				}, function (error, info) {
+
+					if (error) {
+						console.error(`could not send review email... to ${to}`, err)
+						return
+					}
+					
+					console.log("sendReviewEmail sent review email... %s", info.messageId);
+					// Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+					const updateQuery = "UPDATE gm_email_signups SET reminded=1 WHERE email=?;"
+					connection.query(updateQuery, (err, result) => {
+						if (err) {
+							console.log('sendReviewEmail updateQuery error...', err);
+							return reject();
+						}
+						console.log(`sendReviewEmail updated reminded to true for ${to}...`);
+						return resolve()
+					})
+				})
+
+			})
+
+		}
 	});
 })
