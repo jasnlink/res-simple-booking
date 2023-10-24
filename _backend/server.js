@@ -26,8 +26,6 @@ AWS.config.update({
 	secretAccessKey: AWS_SECRET_ACCESS_KEY,
 });
 
-console.log(`process.env.SMTP_HOST`, process.env.SMTP_HOST)
-
 // create reusable transporter object using the default SMTP transport
 const transporter = nodemailer.createTransport({
 	host: process.env.SMTP_HOST,
