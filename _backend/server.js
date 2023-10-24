@@ -366,15 +366,6 @@ cron.schedule('0 11 * * *', () => {
 	console.log(`checking email signups to send review mail...`)
 	const fetchEmailSignupRequest = "SELECT * FROM gm_email_signups WHERE reminded=0;"
 	connection.query(fetchEmailSignupRequest, (err, result) => {
-		let err
-		let result = [
-			{
-				email: `test@msmtech.ca`,
-				name: `John Test`,
-				phone: `1111111`,
-
-			}
-		]
 		if (err) {
 			console.error('fetchEmailSignupRequest error...', err);
 			return false;
