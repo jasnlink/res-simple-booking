@@ -347,17 +347,26 @@ app.post('/api/onsite/email/signup', (req, res) => {
 
 	console.log('received email signup...', req.body)
 
-	const insertSignupRequest = "INSERT INTO gm_email_signups (name, phone, email) VALUES (?,?,?);";
-	connection.query(insertSignupRequest, [name, phone, email], (err, result) => {
-		console.log('insert new signup...', email);
-		if (err) {
-			console.log('error...', err);
-			res.status(500).send(err);
-			return false;
+	const fetchSignupRequest = "SELECT * FROM gm_email_signups WHERE email=?;";
+	connection.query(fetchSignupRequest, [email], (err, result) => {
+		if (result.length) {
+			console.log('/api/onsite/email/signup email already exists, do nothing...')
+			return res.status(200).send();
+		} else {
+			const insertSignupRequest = "INSERT INTO gm_email_signups (name, phone, email) VALUES (?,?,?);";
+			connection.query(insertSignupRequest, [name, phone, email], (err, result) => {
+				console.log('/api/onsite/email/signup insert new signup...', email);
+				if (err) {
+					console.log('/api/onsite/email/signup error...', err);
+					res.status(500).send(err);
+					return false;
+				}
+		
+				return res.status(200).send();
+			});
 		}
+	})
 
-		res.status(200).send();
-	});
 })
 
 cron.schedule('0 11 * * *', () => {
